@@ -1,7 +1,76 @@
 import styled from "styled-components";
 
 export const HeaderArea = styled.div`
-        height:100px;
-        background-color:#CCC;
+  @import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap');
 
-`
+  font-family: 'Open Sans', sans-serif;
+  background-color: #FFF;
+  height: 60px;
+  border-bottom: 1px solid #CCC;
+
+  .container {
+    max-width: 1000px;
+    margin: auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 100%;
+
+    a {
+      text-decoration: none;
+      color: inherit;
+    }
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+  }
+
+  .logo img {
+    height: 40px;
+    width: auto;
+  }
+
+  nav {
+    padding: 10px 0;
+
+    ul,
+    li {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    ul {
+      display: flex;
+      align-items: center;
+      height: 40px;
+    }
+
+    li {
+      margin: 0 20px;
+
+      a {
+        color: #302E2E;
+        font-size: 14px;
+        font-weight: 600;
+
+        &:hover {
+          color: #999;
+        }
+
+        &.button {
+          background-color: #302E2E;
+          border-radius: 4px;
+          color: #FFF;
+          padding: 5px 10px;
+
+          &:hover {
+            background-color: #504D4D;
+          }
+        }
+      }
+    }
+  }
+`;
