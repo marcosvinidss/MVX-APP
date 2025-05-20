@@ -51,7 +51,10 @@ export const HeaderArea = styled.div`
     li {
       margin: 0 20px;
 
-      a {
+      a, button {
+        border:0;
+        background:none;
+        cursor:pointer;
         color: #302E2E;
         font-size: 14px;
         font-weight: 600;
@@ -62,9 +65,10 @@ export const HeaderArea = styled.div`
 
         &.button {
           background-color: #302E2E;
-          border-radius: 4px;
+          border-radius: 6px;
           color: #FFF;
-          padding: 5px 10px;
+          padding: 10px 20px;
+          font-size: 15px;
 
           &:hover {
             background-color: #504D4D;
