@@ -108,23 +108,43 @@ export const SearchArea = styled.div`
 `;
 
 export const PageArea = styled.div`
-    h2{
-    font-size:20px
-    }
+  h2 {
+    font-size: 24px;
+    font-weight: 500;
+    color: #555;
+    text-align: center;
+    margin: 30px 0 15px;
+  }
 
-    .list{
-      display:flex;
-      flex-wrap:wrap;
-    }
+  .list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    width: 100%;
+    max-width: 1000px;
+    margin: 0 auto;
+  }
 
-    .seeAllLink{
-      color: #302e2e;
-      tex-decoration:none;
-      font-weight: bold;
-      display: inline-block;
-      margin-top:5px;
-    }
+  .seeAllLink {
+    color: #302e2e;
+    text-decoration: none;
+    font-weight: 600;
+    display: inline-block;
+    margin-top: 10px;
+    text-align: center;
+  }
 
+  hr {
+    margin: 30px 0;
+  }
+
+  p {
+    color: #666;
+    font-size: 14px;
+    max-width: 1000px;
+    margin: 20px auto;
+    text-align: center;
+  }
 `;
 
 export const CategoryGrid = styled.div`
@@ -189,5 +209,66 @@ export const CategoryGrid = styled.div`
         font-size: 11px;
       }
     }
+  }
+`;
+
+// AdItem styles - pode ficar em um arquivo separado, ex: components/partials/styled.js
+export const Item = styled.div`
+  width: 100%;
+  border-radius: 12px;
+  background-color: #fff;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  overflow: hidden;
+  transition: transform 0.2s;
+
+  &:hover {
+    transform: scale(1.02);
+  }
+
+  a {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    text-decoration: none;
+    color: inherit;
+    padding: 10px;
+  }
+
+  .itemImage {
+    flex-shrink: 0;
+    width: 180px;
+    height: 120px;
+    background-color: #f2f2f2;
+    border-radius: 8px;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+  }
+
+  .itemInfo {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .itemName {
+    font-size: 20px;
+    font-weight: 600;
+    color: #302E2E;
+    margin-bottom: 8px;
+  }
+
+  .itemPrice {
+    font-size: 16px;
+    color: #555;
   }
 `;
