@@ -3,11 +3,11 @@ import qs from "qs";
 
 const BASEAPI = "http://localhost:5000";
 
-const apiFetchFile = async (endpoint, body)=>{
-   if (!body.token) {
+const apiFetchFile = async (endpoint, body) => {
+  if (!body.token) {
     const token = Cookies.get("token");
     if (token) {
-      body.append('token', token )
+      body.append('token', token)
     }
   }
 
@@ -18,12 +18,12 @@ const apiFetchFile = async (endpoint, body)=>{
 
   const json = await res.json();
 
-/*
-  if (json.notallowed) {
-    window.location.href = "/signin";
-    return;
-  }
-*/
+  /*
+    if (json.notallowed) {
+      window.location.href = "/signin";
+      return;
+    }
+  */
 
   return json;
 
@@ -101,7 +101,7 @@ const MvxApi = {
     return json?.categories || [];
   },
 
-  getAds:async(options) =>{
+  getAds: async (options) => {
     const json = await apiFetchGet(
       '/ad/list',
       options
@@ -113,17 +113,22 @@ const MvxApi = {
   getAd: async (id, other = false) => {
     const json = await apiFetchGet(
       '/ad/item',
-      {id,other}
+      { id, other }
     )
     return json;
-    
+
   },
 
-  addAd:async (fData) =>{
+  addAd: async (fData) => {
     const json = await apiFetchFile(
       '/ad/add',
       fData
     );
+    return json;
+  },
+
+  getUserInfo: async () => {
+    const json = await apiFetchGet('/user/me');
     return json;
   }
 
