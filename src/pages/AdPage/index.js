@@ -98,7 +98,11 @@ const Page = () => {
                       <strong>{adInfo.userInfo.name}</strong>
                       <small>E-mail: {adInfo.userInfo.email}</small>
                     </div>
-                    <a href={`mailto:${adInfo.userInfo.email}`} target="_blank" rel="noreferrer">
+                    <a
+                      href={`mailto:${adInfo.userInfo.email}?subject=Interesse no anúncio: ${encodeURIComponent(adInfo.title)}&body=Olá ${adInfo.userInfo.name}, tenho interesse no seu anúncio "${adInfo.title}". Podemos conversar?`}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
                       Falar com o vendedor
                     </a>
                   </>
