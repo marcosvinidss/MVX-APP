@@ -117,12 +117,13 @@ export const PageArea = styled.div`
   }
 
   .list {
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr); /* 2 colunas */
     gap: 20px;
     width: 100%;
     max-width: 1000px;
     margin: 0 auto;
+    padding-bottom: 60px; /* Espaço entre os anúncios e o footer */
   }
 
   .seeAllLink {
@@ -176,7 +177,8 @@ export const CategoryGrid = styled.div`
     padding: 10px;
     text-align: center;
 
-    img, svg {
+    img,
+    svg {
       width: 28px;
       height: 28px;
       margin-bottom: 6px;
@@ -200,7 +202,8 @@ export const CategoryGrid = styled.div`
       width: 70px;
       height: 70px;
 
-      img, svg {
+      img,
+      svg {
         width: 24px;
         height: 24px;
       }
@@ -212,12 +215,13 @@ export const CategoryGrid = styled.div`
   }
 `;
 
-// AdItem styles - pode ficar em um arquivo separado, ex: components/partials/styled.js
 export const Item = styled.div`
   width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
   border-radius: 12px;
   background-color: #fff;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   overflow: hidden;
   transition: transform 0.2s;
 
@@ -236,8 +240,8 @@ export const Item = styled.div`
 
   .itemImage {
     flex-shrink: 0;
-    width: 180px;
-    height: 120px;
+    width: 120px;
+    height: 90px;
     background-color: #f2f2f2;
     border-radius: 8px;
     overflow: hidden;
@@ -261,14 +265,14 @@ export const Item = styled.div`
   }
 
   .itemName {
-    font-size: 20px;
-    font-weight: 600;
+    font-size: 18px;
+    font-weight: 500;
     color: #302E2E;
-    margin-bottom: 8px;
+    margin-bottom: 6px;
   }
 
   .itemPrice {
-    font-size: 16px;
+    font-size: 15px;
     color: #555;
   }
 `;
