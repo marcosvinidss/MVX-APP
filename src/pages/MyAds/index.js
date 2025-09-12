@@ -10,8 +10,7 @@ const MyAds = () => {
     const fetchMyAds = async () => {
       const api = MvxApi();
       try {
-        const token = localStorage.getItem("token"); // pega o token do usuário logado
-        const myAds = await api.getMyAds(token);      // envia para o backend
+        const myAds = await api.getMyAds(); // token já é tratado no helper
         setAds(myAds || []);
       } catch (error) {
         console.error("Erro ao buscar anúncios:", error);
@@ -26,9 +25,13 @@ const MyAds = () => {
   const formatPrice = (price) =>
     new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(price || 0);
 
-  const handleEdit = (id) => window.location.href = `/post-an-ad?id=${id}`;
+  const handleEdit = (id) => {
+    window.location.href = `/post-an-ad?id=${id}`;
+  };
+
   const handleDelete = async (id) => {
     if (!window.confirm("Tem certeza que deseja excluir este anúncio?")) return;
+
     const api = MvxApi();
     try {
       await api.deleteAd(id);
@@ -39,8 +42,19 @@ const MyAds = () => {
     }
   };
 
-  if (loading) return <PageArea><p>Carregando anúncios...</p></PageArea>;
-  if (!ads || ads.length === 0) return <PageArea><p>Você ainda não possui anúncios.</p></PageArea>;
+  if (loading)
+    return (
+      <PageArea>
+        <p>Carregando anúncios...</p>
+      </PageArea>
+    );
+
+  if (!ads || ads.length === 0)
+    return (
+      <PageArea>
+        <p>Você ainda não possui anúncios.</p>
+      </PageArea>
+    );
 
   return (
     <PageArea>
