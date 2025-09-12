@@ -1,10 +1,9 @@
-// styled.js dentro da pasta da página MinhaConta
 import styled from "styled-components";
 
 export const PageArea = styled.div`
   max-width: 800px;
   margin: 40px auto;
-  padding: 20px;
+  padding: 25px;
   background-color: #fff;
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
@@ -21,18 +20,61 @@ export const PageArea = styled.div`
     flex-direction: column;
     gap: 20px;
 
-    p {
+    label {
+      display: flex;
+      flex-direction: column;
       font-size: 16px;
-      color: #555;
-      padding: 12px 20px;
-      background-color: #f9f9f9;
-      border: 1px solid #ddd;
-      border-radius: 8px;
+      color: #302e2e;
 
       strong {
-        color: #302e2e;
-        margin-right: 5px;
+        margin-bottom: 6px;
       }
+
+      input,
+      select {
+        padding: 10px 12px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        font-size: 15px;
+        background: #fff;
+
+        &:focus {
+          border-color: #302e2e;
+          outline: none;
+        }
+      }
+
+      select {
+        cursor: pointer;
+      }
+    }
+  }
+
+  .feedback {
+    margin: 15px 0;
+    text-align: center;
+    font-weight: 600;
+    color: green;
+  }
+
+  .edit-button {
+    display: block;
+    width: 100%;
+    max-width: 200px;
+    margin: 30px auto 0;
+    padding: 12px 20px;
+    background-color: #302e2e;
+    color: #fff;
+    font-size: 16px;
+    font-weight: 600;
+    text-align: center;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+
+    &:hover {
+      background-color: #1f1d1d;
     }
   }
 
@@ -43,9 +85,19 @@ export const PageArea = styled.div`
       font-size: 24px;
     }
 
-    .user-info p {
+    .edit-button {
+      width: 100%;
       font-size: 15px;
-      padding: 10px 15px;
+    }
+
+    .user-info label {
+      font-size: 15px;
+
+      input,
+      select {
+        font-size: 14px;
+        padding: 8px 10px;
+      }
     }
   }
 `;

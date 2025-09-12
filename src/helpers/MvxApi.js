@@ -3,44 +3,60 @@ import qs from "qs";
 
 const BASEAPI = "http://localhost:5000";
 
+// -------------------- Helpers --------------------
+
 const apiFetchFile = async (endpoint, body) => {
   if (!body.token) {
     const token = Cookies.get("token");
     if (token) {
-      body.append('token', token)
+      body.append("token", token);
     }
   }
 
   const res = await fetch(BASEAPI + endpoint, {
     method: "POST",
-    body
+    body,
   });
 
   const json = await res.json();
-
-  /*
-    if (json.notallowed) {
-      window.location.href = "/signin";
-      return;
-    }
-  */
-
   return json;
-
-}
+};
 
 const apiFetchPost = async (endpoint, body = {}) => {
   if (!body.token) {
     const token = Cookies.get("token");
-    if (token) {
-      body.token = token;
-    }
+    if (token) body.token = token;
   }
 
   const res = await fetch(BASEAPI + endpoint, {
     method: "POST",
     headers: {
-      "Accept": "application/json",
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(body),
+  });
+
+  const json = await res.json();
+
+  if (json.notallowed) {
+    window.location.href = "/signin";
+    return;
+  }
+
+  return json;
+};
+
+const apiFetchPut = async (endpoint, body = {}) => {
+  if (!body.token) {
+    const token = Cookies.get("token");
+    if (token) body.token = token;
+  }
+
+  const res = await fetch(BASEAPI + endpoint, {
+    method: "PUT",
+    headers: {
+      Accept: "application/json",
       "Content-Type": "application/json",
     },
     body: JSON.stringify(body),
@@ -59,9 +75,7 @@ const apiFetchPost = async (endpoint, body = {}) => {
 const apiFetchGet = async (endpoint, body = {}) => {
   if (!body.token) {
     const token = Cookies.get("token");
-    if (token) {
-      body.token = token;
-    }
+    if (token) body.token = token;
   }
 
   const res = await fetch(`${BASEAPI + endpoint}?${qs.stringify(body)}`);
@@ -74,6 +88,8 @@ const apiFetchGet = async (endpoint, body = {}) => {
 
   return json;
 };
+
+// -------------------- API --------------------
 
 const MvxApi = {
   login: async (email, password) => {
@@ -102,36 +118,30 @@ const MvxApi = {
   },
 
   getAds: async (options) => {
-    const json = await apiFetchGet(
-      '/ad/list',
-      options
-    )
+    const json = await apiFetchGet("/ad/list", options);
     return json;
-
   },
 
   getAd: async (id, other = false) => {
-    const json = await apiFetchGet(
-      '/ad/item',
-      { id, other }
-    )
+    const json = await apiFetchGet("/ad/item", { id, other });
     return json;
-
   },
 
   addAd: async (fData) => {
-    const json = await apiFetchFile(
-      '/ad/add',
-      fData
-    );
+    const json = await apiFetchFile("/ad/add", fData);
     return json;
   },
 
   getUserInfo: async () => {
-    const json = await apiFetchGet('/user/me');
+    const json = await apiFetchGet("/user/me");
     return json;
-  }
+  },
 
+  updateUser: async (data) => {
+    // data = { name, email, state }
+    const json = await apiFetchPut("/user/me", data); // <- CORREÇÃO: usa PUT
+    return json;
+  },
 };
 
 export default () => MvxApi;
