@@ -10,6 +10,7 @@ import AdPage from "./pages/AdPage";
 import AddAd from "./pages/AddAd";
 import Ads from "./pages/Ads";
 import MyAccount from "./pages/MyAccount";
+import MyAds from "./pages/MyAds";
 
 import RouteHandler from "./components/RouteHandler";
 
@@ -22,6 +23,8 @@ const AppRoutes = () => {
       <Route path="/signup" element={<SignUp />} />
       <Route path="/ad/:id" element={<AdPage />} />
       <Route path="/ads" element={<Ads />} />
+
+      {/* Criar ou Editar anúncio */}
       <Route
         path="/post-an-ad"
         element={
@@ -31,6 +34,26 @@ const AppRoutes = () => {
         }
       />
       <Route
+        path="/post-an-ad/:id"
+        element={
+          <RouteHandler>
+            <AddAd />
+          </RouteHandler>
+        }
+      />
+
+      {/* Meus Anúncios */}
+      <Route
+        path="/my-ads"
+        element={
+          <RouteHandler>
+            <MyAds />
+          </RouteHandler>
+        }
+      />
+
+      {/* Minha Conta */}
+      <Route
         path="/my-account"
         element={
           <RouteHandler>
@@ -38,6 +61,7 @@ const AppRoutes = () => {
           </RouteHandler>
         }
       />
+
       <Route path="*" element={<NotFound />} />
     </Routes>
   );

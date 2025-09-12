@@ -8,9 +8,7 @@ const BASEAPI = "http://localhost:5000";
 const apiFetchFile = async (endpoint, body) => {
   if (!body.token) {
     const token = Cookies.get("token");
-    if (token) {
-      body.append("token", token);
-    }
+    if (token) body.append("token", token);
   }
 
   const res = await fetch(BASEAPI + endpoint, {
@@ -109,17 +107,17 @@ const MvxApi = {
 
   getStates: async () => {
     const json = await apiFetchGet("/states");
-    return json.states;
+    return json.states || [];
   },
 
   getCategories: async () => {
     const json = await apiFetchGet("/categories");
-    return json?.categories || [];
+    return json.categories || [];
   },
 
   getAds: async (options) => {
     const json = await apiFetchGet("/ad/list", options);
-    return json;
+    return json || [];
   },
 
   getAd: async (id, other = false) => {
@@ -138,10 +136,16 @@ const MvxApi = {
   },
 
   updateUser: async (data) => {
-    // data = { name, email, state }
-    const json = await apiFetchPut("/user/me", data); // <- CORREÇÃO: usa PUT
+    const json = await apiFetchPut("/user/me", data);
     return json;
   },
+
+  // -------------------- NOVA FUNÇÃO --------------------
+getMyAds: async () => {
+  const json = await apiFetchGet("/ad/my-ads"); // ou "/ad/list-by-user" se for o nome do endpoint
+  return json.ads || [];
+},
+
 };
 
 export default () => MvxApi;

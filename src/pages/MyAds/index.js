@@ -1,68 +1,68 @@
 import React, { useEffect, useState } from "react";
-import { PageContainer, PageBody } from "../../components/MainComponents"; // use PageBody
-import useApi from "../../helpers/MvxApi";
-import AdItem from "../../components/partials/AdItem";
+import MvxApi from "../../helpers/MvxApi";
+import { PageArea } from "./styled";
 
 const MyAds = () => {
-  const api = useApi();
-  const [adList, setAdList] = useState([]);
+  const [ads, setAds] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const loadUserAds = async () => {
-    setLoading(true);
-    const json = await api.getUserAds();
-    if (json && json.ads) setAdList(json.ads);
-    else setAdList([]);
-    setLoading(false);
-  };
-
   useEffect(() => {
-    loadUserAds();
+    const fetchMyAds = async () => {
+      const api = MvxApi();
+      try {
+        const token = localStorage.getItem("token"); // pega o token do usuário logado
+        const myAds = await api.getMyAds(token);      // envia para o backend
+        setAds(myAds || []);
+      } catch (error) {
+        console.error("Erro ao buscar anúncios:", error);
+        setAds([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchMyAds();
   }, []);
 
+  const formatPrice = (price) =>
+    new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(price || 0);
+
+  const handleEdit = (id) => window.location.href = `/post-an-ad?id=${id}`;
   const handleDelete = async (id) => {
-    if (window.confirm("Tem certeza que deseja excluir este anúncio?")) {
-      const json = await api.deleteAd(id);
-      if (!json.error) {
-        alert("Anúncio excluído com sucesso!");
-        loadUserAds();
-      } else {
-        alert("Erro ao excluir anúncio: " + json.error);
-      }
+    if (!window.confirm("Tem certeza que deseja excluir este anúncio?")) return;
+    const api = MvxApi();
+    try {
+      await api.deleteAd(id);
+      setAds((prev) => prev.filter((ad) => ad.id !== id));
+    } catch (error) {
+      console.error("Erro ao excluir anúncio:", error);
+      alert("Não foi possível excluir o anúncio.");
     }
   };
 
-  const handleEdit = (id) => {
-    window.location.href = `/post-an-ad?id=${id}`;
-  };
+  if (loading) return <PageArea><p>Carregando anúncios...</p></PageArea>;
+  if (!ads || ads.length === 0) return <PageArea><p>Você ainda não possui anúncios.</p></PageArea>;
 
   return (
-    <PageContainer>
-      <PageBody>
-        <h2>Meus Anúncios</h2>
-
-        {loading && <p>Carregando anúncios...</p>}
-        {!loading && adList.length === 0 && (
-          <p>Você ainda não publicou nenhum anúncio.</p>
-        )}
-
-        <div className="adsList">
-          {adList.map((ad) => (
-            <div key={ad.id} className="adItem">
-              <AdItem data={ad} />
+    <PageArea>
+      <h1>Meus Anúncios</h1>
+      <div className="adsList">
+        {ads.map((ad) => (
+          <div className="adItem" key={ad.id}>
+            <div className="adImg">
+              <img src={ad.image || "/img/no-image.png"} alt={ad.title || "Anúncio"} />
+            </div>
+            <div className="adContent">
+              <h3>{ad.title || "Sem título"}</h3>
+              <p>{formatPrice(ad.price)}</p>
               <div className="adButtons">
-                <button className="edit" onClick={() => handleEdit(ad.id)}>
-                  Editar
-                </button>
-                <button className="delete" onClick={() => handleDelete(ad.id)}>
-                  Excluir
-                </button>
+                <button className="edit" onClick={() => handleEdit(ad.id)}>Editar</button>
+                <button className="delete" onClick={() => handleDelete(ad.id)}>Excluir</button>
               </div>
             </div>
-          ))}
-        </div>
-      </PageBody>
-    </PageContainer>
+          </div>
+        ))}
+      </div>
+    </PageArea>
   );
 };
 

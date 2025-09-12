@@ -29,10 +29,14 @@ const Header = () => {
                                     <Link to="/my-account">Minha Conta</Link>
                                 </li>
                                 <li>
+                                    <Link to="/my-ads">Meus Anúncios</Link>
+                                </li>
+
+                                <li>
                                     <button onClick={handleLogout}>Sair</button>
                                 </li>
                                 <li>
-                                    <Link to="post-an-ad" className="button">Faça um anúncio</Link>
+                                    <Link to="/post-an-ad" className="button">Faça um anúncio</Link>
                                 </li>
                             </>
                         }
@@ -44,7 +48,7 @@ const Header = () => {
                                 <li>
                                     <Link to="/signup">Cadastrar</Link>
                                 </li>
-                                 <li>
+                                <li>
                                     <Link to="/signin" className="button">Faça um anúncio</Link>
                                 </li>
                             </>

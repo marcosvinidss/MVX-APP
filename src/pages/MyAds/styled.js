@@ -1,99 +1,99 @@
 import styled from "styled-components";
 
-export const MyAdsArea = styled.div`
-  width: 100%;
-  max-width: 1000px;
-  margin: 0 auto;
-  padding: 30px 15px;
+export const PageArea = styled.div`
+  max-width: 700px;
+  margin: 40px auto;
+  padding: 25px;
 
-  h2 {
-    font-size: 26px;
-    font-weight: 700;
-    color: #302E2E;
+  h1 {
     text-align: center;
+    color: #302e2e;
     margin-bottom: 30px;
   }
 
-  p {
-    text-align: center;
-    color: #666;
-    font-size: 14px;
-    margin: 20px 0;
-  }
-
   .adsList {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    display: flex;
+    flex-direction: column;
     gap: 20px;
-    justify-items: center;
   }
 
   .adItem {
-    width: 100%;
-    background-color: #fff;
-    border-radius: 15px;
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+    display: flex;
+    background: #f9f9f9;
+    border-radius: 12px;
     overflow: hidden;
+    border: 1px solid #ddd;
     transition: transform 0.3s, box-shadow 0.3s;
 
     &:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 12px 25px rgba(0, 0, 0, 0.15);
+      transform: translateY(-3px);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+    }
+
+    .adImg {
+      width: 200px;
+      height: 140px;
+      flex-shrink: 0;
+      overflow: hidden;
+
+      img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
     }
 
     .adContent {
-      padding: 20px;
+      flex: 1;
+      padding: 15px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
 
       h3 {
-        font-size: 20px;
-        font-weight: 700;
-        color: #302E2E;
-        margin-bottom: 10px;
+        margin: 0 0 10px 0;
+        font-size: 18px;
+        color: #302e2e;
       }
 
       p {
-        font-size: 14px;
+        margin: 0 0 15px 0;
+        font-weight: 600;
         color: #555;
-        margin-bottom: 15px;
       }
 
       .adButtons {
         display: flex;
-        gap: 12px;
+        gap: 10px;
 
         button {
           flex: 1;
-          padding: 12px 0;
+          padding: 10px 0;
           border: none;
           border-radius: 8px;
-          font-size: 15px;
           font-weight: 600;
           cursor: pointer;
           transition: all 0.3s;
-          box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 
           &.edit {
-            background-color: #302E2E; /* fundo escuro padrão */
+            background: #302e2e;
             color: #fff;
 
             &:hover {
-              background-color: #1f1d1d;
+              background: #1f1d1d;
               transform: translateY(-2px);
-              box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+              box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
             }
           }
 
           &.delete {
-            background: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%);
+            background: linear-gradient(135deg, #ff416c, #ff4b2b);
             color: #fff;
 
             &:hover {
-              background: linear-gradient(135deg, #ff4b2b 0%, #ff416c 100%);
+              background: linear-gradient(135deg, #ff4b2b, #ff416c);
               transform: translateY(-2px);
-              box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+              box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
             }
           }
         }
@@ -101,21 +101,23 @@ export const MyAdsArea = styled.div`
     }
   }
 
-  @media (max-width: 768px) {
-    padding: 20px 10px;
+  @media (max-width: 600px) {
+    padding: 15px;
 
-    .adsList {
-      grid-template-columns: 1fr;
-      gap: 15px;
-    }
-
-    .adItem .adContent .adButtons {
+    .adItem {
       flex-direction: column;
 
-      button {
+      .adImg {
         width: 100%;
+        height: 200px;
+      }
+
+      .adButtons {
+        flex-direction: column;
+        button {
+          width: 100%;
+        }
       }
     }
   }
 `;
-  
