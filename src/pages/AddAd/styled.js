@@ -1,7 +1,6 @@
 import styled from "styled-components";
 
 export const PageContainer = styled.div`
-  padding: 40px 20px;
   background: linear-gradient(to bottom, #f4f4f4, #eaeaea);
   min-height: 100vh;
   display: flex;
@@ -34,13 +33,17 @@ export const ErrorMessage = styled.div`
 `;
 
 export const PageArea = styled.div`
+  margin: 30px auto; /* margem pequena do header e footer */
+  max-width: 600px; /* evita que o conteúdo fique muito largo */
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+
   form {
     background-color: #ffffff;
     border-radius: 12px;
     padding: 40px 50px;
     box-shadow: 0 10px 32px rgba(0, 0, 0, 0.1);
-    max-width: 540px;
-    margin: 0 auto;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -96,7 +99,8 @@ export const PageArea = styled.div`
       input[type="text"],
       input[type="email"],
       input[type="password"],
-      textarea {
+      textarea,
+      select {
         width: 100%;
         font-size: 15px;
         padding: 12px 14px;
@@ -116,6 +120,47 @@ export const PageArea = styled.div`
       textarea {
         resize: vertical;
         min-height: 100px;
+      }
+
+      select {
+        appearance: none;
+        cursor: pointer;
+      }
+
+      .existing-images {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        max-width: 100%; /* garante que não saia do container */
+        overflow: hidden;
+
+        .image-item {
+          position: relative;
+          img {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+          }
+
+          button {
+            position: absolute;
+            top: -6px;
+            right: -6px;
+            background-color: #ff5c5c;
+            border: none;
+            color: #fff;
+            border-radius: 50%;
+            width: 22px;
+            height: 22px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: bold;
+            line-height: 22px;
+            text-align: center;
+          }
+        }
       }
     }
   }
@@ -165,6 +210,7 @@ export const PageArea = styled.div`
   }
 
   @media (max-width: 600px) {
+    margin: 20px auto; /* reduz no mobile */
     form {
       padding: 30px 20px;
     }
@@ -174,7 +220,8 @@ export const PageArea = styled.div`
     }
 
     .area--input input,
-    .area--input textarea {
+    .area--input textarea,
+    .area--input select {
       font-size: 14px;
     }
 
