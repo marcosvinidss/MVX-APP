@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { PageArea } from './styled';
 import useApi from '../../helpers/MvxApi';
-import { PageContainer, PageTitle, ErrorMessage } from '../../components/MainComponents';
+import { PageContainer, ErrorMessage } from '../../components/MainComponents';
 import { doLogin } from "../../helpers/AuthHandler";
 
 const Page = () => {
@@ -16,15 +16,13 @@ const Page = () => {
   const [error, setError] = useState('');
   const [stateList, setStateList] = useState([]);
 
-
-  useEffect(()=>{
-      const getStates = async () =>{
-          const slist = await api.getStates();
-          setStateList(slist);
-      }
-      getStates();
-  },[])
-
+  useEffect(() => {
+    const getStates = async () => {
+      const slist = await api.getStates();
+      setStateList(slist);
+    };
+    getStates();
+  }, [api]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -39,8 +37,34 @@ const Page = () => {
 
     const json = await api.register(name, email, password, stateLoc);
 
-    if (json.error) {
-      setError(json.error);
+    if (json.error || json.msg) {
+      let message = '';
+
+      if (json.msg) {
+        message = json.msg;
+      } else if (typeof json.error === 'object' && json.error !== null) {
+        // tenta extrair de várias possíveis estruturas
+        message =
+          json.error.email?.msg ||
+          json.error.state?.msg ||
+          json.error.msg ||
+          Object.values(json.error)[0];
+      } else {
+        message = json.error;
+      }
+
+      // garante que é string
+      if (typeof message !== 'string') {
+        message = JSON.stringify(message);
+      }
+
+      // limpa qualquer "msg:" ou símbolos extras
+      message = message
+        .replace(/^msg\s*[:=]\s*/i, '') // remove prefixo "msg:"
+        .replace(/[{}"]/g, '')          // remove chaves e aspas
+        .trim();
+
+      setError(message || 'Erro desconhecido.');
     } else {
       doLogin(json.token);
       window.location.href = '/';
@@ -84,7 +108,6 @@ const Page = () => {
               </select>
             </div>
           </label>
-
 
           <label className="area">
             <div className="area--title">E-mail</div>
