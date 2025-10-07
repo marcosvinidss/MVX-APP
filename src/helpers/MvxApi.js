@@ -198,10 +198,20 @@ const MvxApi = {
     return Array.isArray(json)
       ? json
       : json?.favorites
-      ? json.favorites
-      : [];
+        ? json.favorites
+        : [];
   },
+  reportAd: async (adId, reason, details) => {
+    const token = Cookies.get("token"); // 🔐 pega o token salvo nos cookies
+    const json = await apiFetchPost("/report", {
+      token, // ✅ envia o token dentro do corpo (como o back espera)
+      reportedAd: adId,
+      reason,
+      details,
+    });
+    return json;
+  },
+
 };
 
-// ✅ exporta a instância corretamente
 export default () => MvxApi;
