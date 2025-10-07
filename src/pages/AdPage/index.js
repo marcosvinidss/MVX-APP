@@ -11,15 +11,29 @@ const Page = () => {
 
   const [loading, setLoading] = useState(true);
   const [adInfo, setAdInfo] = useState({});
+  const [isFavorite, setIsFavorite] = useState(false);
 
   useEffect(() => {
     const getAdInfo = async (id) => {
       const json = await api.getAd(id, true);
       setAdInfo(json);
+
+      // Se o backend enviar informação se o anúncio está favoritado
+      if (json.isFavorite) setIsFavorite(true);
+
       setLoading(false);
     };
     getAdInfo(id);
   }, [id]);
+
+  const handleFavorite = async () => {
+    try {
+      await api.toggleFavorite(id);
+      setIsFavorite(!isFavorite);
+    } catch (err) {
+      console.error('Erro ao favoritar:', err);
+    }
+  };
 
   const formatDate = (date) => {
     const cDate = new Date(date);
@@ -59,7 +73,28 @@ const Page = () => {
             <div className="adInfo">
               <div className="adName">
                 {loading && <Fake height={20} />}
-                {adInfo.title && <h2>{adInfo.title}</h2>}
+
+                {adInfo.title && (
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <h2>{adInfo.title}</h2>
+
+                    {/* Botão de favoritar */}
+                    <button
+                      onClick={handleFavorite}
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        cursor: 'pointer',
+                        fontSize: '26px',
+                        transition: '0.2s ease',
+                      }}
+                      title={isFavorite ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}
+                    >
+                      {isFavorite ? '💛' : '🤍'}
+                    </button>
+                  </div>
+                )}
+
                 {adInfo.dateCreated && (
                   <small>Criado em {formatDate(adInfo.dateCreated)}</small>
                 )}
@@ -95,7 +130,7 @@ const Page = () => {
                   <>
                     <div className="createdBy">
                       Criado por:
-                      <strong>{adInfo.userInfo.name}</strong>
+                      <strong> {adInfo.userInfo.name}</strong>
                       <small>E-mail: {adInfo.userInfo.email}</small>
                     </div>
                     <a

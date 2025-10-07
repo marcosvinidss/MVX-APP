@@ -11,12 +11,14 @@ import AddAd from "./pages/AddAd";
 import Ads from "./pages/Ads";
 import MyAccount from "./pages/MyAccount";
 import MyAds from "./pages/MyAds";
+import FavPage from "./pages/FavPage"; // ✅ nova página
 
 import RouteHandler from "./components/RouteHandler";
 
 const AppRoutes = () => {
   return (
     <Routes>
+      {/* Páginas públicas */}
       <Route path="/" element={<Home />} />
       <Route path="/about" element={<About />} />
       <Route path="/signin" element={<SignIn />} />
@@ -52,6 +54,16 @@ const AppRoutes = () => {
         }
       />
 
+      {/* Favoritos ✅ */}
+      <Route
+        path="/favorites"
+        element={
+          <RouteHandler>
+            <FavPage />
+          </RouteHandler>
+        }
+      />
+
       {/* Minha Conta */}
       <Route
         path="/my-account"
@@ -62,6 +74,7 @@ const AppRoutes = () => {
         }
       />
 
+      {/* 404 */}
       <Route path="*" element={<NotFound />} />
     </Routes>
   );

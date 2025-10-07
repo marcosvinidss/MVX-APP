@@ -130,19 +130,19 @@ const apiFetchDelete = async (endpoint, body = {}) => {
 // -------------------- API --------------------
 
 const MvxApi = {
+  baseURL: BASEAPI, // ✅ importante: expõe o baseURL pro frontend
+
   login: async (email, password) => {
-    const json = await apiFetchPost("/user/signin", { email, password });
-    return json;
+    return await apiFetchPost("/user/signin", { email, password });
   },
 
   register: async (name, email, password, stateLoc) => {
-    const json = await apiFetchPost("/user/signup", {
+    return await apiFetchPost("/user/signup", {
       name,
       email,
       password,
       state: stateLoc,
     });
-    return json;
   },
 
   getStates: async () => {
@@ -161,39 +161,47 @@ const MvxApi = {
   },
 
   getAd: async (id, other = false) => {
-    const json = await apiFetchGet("/ad/item", { id, other });
-    return json;
+    return await apiFetchGet("/ad/item", { id, other });
   },
 
   addAd: async (fData) => {
-    const json = await apiFetchFile("/ad/add", fData);
-    return json;
+    return await apiFetchFile("/ad/add", fData);
   },
 
   editAd: async (id, fData) => {
-    const json = await apiFetchFile(`/ad/${id}`, fData); // POST para editar
-    return json;
+    return await apiFetchFile(`/ad/${id}`, fData);
   },
 
   getUserInfo: async () => {
-    const json = await apiFetchGet("/user/me");
-    return json;
+    return await apiFetchGet("/user/me");
   },
 
   updateUser: async (data) => {
-    const json = await apiFetchPut("/user/me", data);
-    return json;
+    return await apiFetchPut("/user/me", data);
   },
 
   getMyAds: async () => {
-    const json = await apiFetchGet("/ad/my-ads"); // ou "/ad/list-by-user"
+    const json = await apiFetchGet("/ad/my-ads");
     return json.ads || [];
   },
 
   deleteAd: async (id) => {
-    const json = await apiFetchDelete(`/ad/${id}`);
-    return json;
+    return await apiFetchDelete(`/ad/${id}`);
+  },
+
+  toggleFavorite: async (id) => {
+    return await apiFetchPost(`/ad/${id}/favorite`);
+  },
+
+  getFavorites: async () => {
+    const json = await apiFetchGet("/user/favorites");
+    return Array.isArray(json)
+      ? json
+      : json?.favorites
+      ? json.favorites
+      : [];
   },
 };
 
+// ✅ exporta a instância corretamente
 export default () => MvxApi;

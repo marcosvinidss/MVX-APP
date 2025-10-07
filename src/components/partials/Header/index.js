@@ -1,63 +1,109 @@
-import React from "react";
-import { HeaderArea } from "./styled";
-import { Link } from "react-router-dom";
-
+import React, { useState, useEffect } from "react";
+import { HeaderArea, SideMenu, Overlay } from "./styled";
+import { Link, useNavigate } from "react-router-dom";
 import { isLogged, doLogout } from "../../../helpers/AuthHandler";
+import { Menu, X } from "lucide-react";
 
 const Header = () => {
-    let logged = isLogged();
+  const [menuOpen, setMenuOpen] = useState(false);
+  const logged = isLogged();
+  const navigate = useNavigate();
 
-    const handleLogout = () => {
-        doLogout();
-        window.location.href = '/';
+  const handleLogout = () => {
+    doLogout();
+    window.location.href = "/";
+  };
+
+  const toggleMenu = () => setMenuOpen((prev) => !prev);
+
+  const handleCreateAd = () => {
+    if (logged) {
+      navigate("/post-an-ad");
+    } else {
+      navigate("/signin");
     }
+  };
 
-    return (
-        <HeaderArea>
-            <div className="container">
-                <div className="logo">
-                    <Link to="/">
-                        <img src="/img/MVX.png" alt="MVX Logo" />
-                    </Link>
+  useEffect(() => {
+    document.body.style.overflow = menuOpen ? "hidden" : "auto";
+  }, [menuOpen]);
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape" && menuOpen) setMenuOpen(false);
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [menuOpen]);
+
+  return (
+    <>
+      <HeaderArea>
+        <div className="container">
+          <div className="logo">
+            <Link to="/">
+              <img src="/img/MVX.png" alt="MVX Logo" />
+            </Link>
+          </div>
+
+          <div className="actions">
+            {logged ? (
+              <>
+                <button className="menuButton" onClick={toggleMenu}>
+                  {menuOpen ? <X size={28} /> : <Menu size={28} />}
+                </button>
+
+                <button className="createAdButton" onClick={handleCreateAd}>
+                  + Criar Anúncio
+                </button>
+              </>
+            ) : (
+              <>
+                <div className="authButtons">
+                  <Link to="/signin" className="loginBtn">
+                    Entrar
+                  </Link>
+                  <Link to="/signup" className="signupBtn">
+                    Cadastrar
+                  </Link>
                 </div>
 
-                <nav>
-                    <ul>
-                        {logged &&
-                            <>
-                                <li>
-                                    <Link to="/my-account">Minha Conta</Link>
-                                </li>
-                                <li>
-                                    <Link to="/my-ads">Meus Anúncios</Link>
-                                </li>
+                <button className="createAdButton" onClick={handleCreateAd}>
+                  + Criar Anúncio
+                </button>
+              </>
+            )}
+          </div>
 
-                                <li>
-                                    <button onClick={handleLogout}>Sair</button>
-                                </li>
-                                <li>
-                                    <Link to="/post-an-ad" className="button">Faça um anúncio</Link>
-                                </li>
-                            </>
-                        }
-                        {!logged &&
-                            <>
-                                <li>
-                                    <Link to="/signin">Login</Link>
-                                </li>
-                                <li>
-                                    <Link to="/signup">Cadastrar</Link>
-                                </li>
-                                <li>
-                                    <Link to="/signin" className="button">Faça um anúncio</Link>
-                                </li>
-                            </>
-                        }
-                    </ul>
-                </nav>
-            </div>
-        </HeaderArea>
-    );
+        </div>
+      </HeaderArea>
+
+      {menuOpen && <Overlay onClick={toggleMenu} />}
+
+      <SideMenu open={menuOpen}>
+        <ul>
+          <li>
+            <Link to="/my-ads" onClick={toggleMenu}>
+              Meus Anúncios
+            </Link>
+          </li>
+          <li>
+            <Link to="/favorites" onClick={toggleMenu}>
+              Anúncios Favoritos
+            </Link>
+          </li>
+          <li>
+            <Link to="/my-account" onClick={toggleMenu}>
+              Minha Conta
+            </Link>
+          </li>
+          <li>
+            <button onClick={handleLogout}>Sair</button>
+          </li>
+        </ul>
+      </SideMenu>
+    </>
+  );
 };
 
 export default Header;
