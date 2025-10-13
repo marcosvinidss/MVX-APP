@@ -1,15 +1,16 @@
+// src/components/AdminRoute.js
 import React from "react";
 import { Navigate } from "react-router-dom";
 
 const AdminRoute = ({ children }) => {
-  const adminData = JSON.parse(localStorage.getItem("adminData"));
-  const isAuthenticated = adminData?.token;
-  const isAdmin = adminData?.isAdmin;
+  const token = localStorage.getItem("token");
 
-  if (!isAuthenticated || !isAdmin) {
-    return <Navigate to="/admin/login" replace />;
+  // Se não há token, redireciona para o login admin
+  if (!token) {
+    return <Navigate to="/admin/login" />;
   }
 
+  // Aqui você pode fazer validações extras futuramente (ex: verificar se é admin de fato)
   return children;
 };
 

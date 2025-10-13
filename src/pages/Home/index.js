@@ -55,7 +55,7 @@ const Page = () => {
               <input type="text" name="q" placeholder="O que você procura?" />
               <select name="state" defaultValue="">
                 <option value="" disabled>Selecione o estado</option>
-                {stateList.map((i) => (
+                {stateList?.map((i) => (
                   <option key={i.name} value={i.name}>{i.name}</option>
                 ))}
               </select>
@@ -64,7 +64,7 @@ const Page = () => {
           </div>
 
           <CategoryGrid>
-            {categories.map((cat) => {
+            {categories?.map((cat) => {
               const iconSrc = iconMap[cat.slug];
               return (
                 <Link key={cat.slug} to={`/ads?cat=${cat.slug}`} className="categoryItem">
@@ -80,7 +80,7 @@ const Page = () => {
         <PageArea>
           <h2>ANÚNCIOS RECENTES</h2>
           <div className="list">
-            {adList.map((i, k) =>
+            {adList?.map((i, k) =>
               <AdItem key={k} data={i} />
             )}
           </div>

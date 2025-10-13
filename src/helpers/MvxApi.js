@@ -127,11 +127,35 @@ const apiFetchDelete = async (endpoint, body = {}) => {
   return json;
 };
 
+// -------------------- ADMIN HELPERS --------------------
+
+const apiFetchAdminGet = async (endpoint) => {
+  const adminToken = Cookies.get("adminToken");
+
+  if (!adminToken) {
+    console.error("Admin token não encontrado. Faça login novamente.");
+    window.location.href = "/admin/login";
+    return;
+  }
+
+  const res = await fetch(BASEAPI + endpoint, {
+    method: "GET",
+    headers: {
+      Accept: "application/json",
+      Authorization: `Bearer ${adminToken}`,
+    },
+  });
+
+  const json = await res.json();
+  return json;
+};
+
 // -------------------- API --------------------
 
 const MvxApi = {
-  baseURL: BASEAPI, // ✅ importante: expõe o baseURL pro frontend
+  baseURL: BASEAPI,
 
+  // Usuário comum
   login: async (email, password) => {
     return await apiFetchPost("/user/signin", { email, password });
   },
@@ -198,13 +222,14 @@ const MvxApi = {
     return Array.isArray(json)
       ? json
       : json?.favorites
-        ? json.favorites
-        : [];
+      ? json.favorites
+      : [];
   },
+
   reportAd: async (adId, reason, details) => {
-    const token = Cookies.get("token"); // 🔐 pega o token salvo nos cookies
+    const token = Cookies.get("token");
     const json = await apiFetchPost("/report", {
-      token, // ✅ envia o token dentro do corpo (como o back espera)
+      token,
       reportedAd: adId,
       reason,
       details,
@@ -212,6 +237,25 @@ const MvxApi = {
     return json;
   },
 
+  // -------------------- ROTAS ADMIN --------------------
+
+  adminLogin: async (email, password) => {
+    const json = await apiFetchPost("/admin/login", { email, password });
+    if (json.token) {
+      Cookies.set("adminToken", json.token, { expires: 1 });
+    }
+    return json;
+  },
+
+  getAdminReports: async () => {
+    const json = await apiFetchAdminGet("/admin/reports");
+    return json.reports || [];
+  },
+
+  getAdminUsers: async () => {
+    const json = await apiFetchAdminGet("/admin/users");
+    return json.users || [];
+  },
 };
 
 export default () => MvxApi;
