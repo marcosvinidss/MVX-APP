@@ -7,6 +7,7 @@ npm install lucide-react
 npm install react-slideshow-image
 npm install react-text-mask text-mask-addons --legacy-peer-deps
 npm install react-toastify
+npm install socket.io-client
 
 
 

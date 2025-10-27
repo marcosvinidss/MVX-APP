@@ -29,6 +29,38 @@ export const HeaderArea = styled.div`
     gap: 12px;
   }
 
+  /* Ícone do chat */
+  .chatButton {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #302e2e;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px;
+    transition: all 0.2s ease;
+
+    svg {
+      stroke-width: 2.2;
+      transition: all 0.2s ease;
+    }
+
+    &:hover {
+      color: #ff6600;
+      transform: scale(1.1);
+
+      svg {
+        transform: translateY(-1px);
+      }
+    }
+
+    &:active {
+      transform: scale(0.96);
+      color: #302e2e;
+    }
+  }
+
   /* Botão Criar Anúncio */
   .createAdButton {
     background-color: #302e2e;
@@ -66,7 +98,6 @@ export const HeaderArea = styled.div`
     align-items: center;
   }
 
-  /* Regras base para os botões de autenticação */
   .authButtons a,
   .authButtons .loginBtn,
   .authButtons .signupBtn {
@@ -83,7 +114,6 @@ export const HeaderArea = styled.div`
     line-height: 1;
   }
 
-  /* Botão de Entrar (contorno simples) */
   .authButtons .loginBtn {
     background: transparent;
     color: #302e2e;
@@ -95,7 +125,6 @@ export const HeaderArea = styled.div`
     }
   }
 
-  /* Botão de Cadastrar — destaque leve com gradiente */
   .authButtons .signupBtn {
     background: linear-gradient(135deg, #3d3a3a 0%, #5a5757 100%);
     color: #fff;
@@ -115,7 +144,6 @@ export const HeaderArea = styled.div`
     }
   }
 
-  /* Ícone do menu hambúrguer */
   .menuButton {
     background: none;
     border: none;
@@ -135,7 +163,6 @@ export const HeaderArea = styled.div`
     }
   }
 
-  /* Responsividade */
   @media (max-width: 480px) {
     .createAdButton {
       padding: 7px 10px;

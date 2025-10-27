@@ -4,6 +4,7 @@ import useApi from "../../helpers/MvxApi";
 import { useParams } from "react-router-dom";
 import { Slide } from "react-slideshow-image";
 import "react-slideshow-image/dist/styles.css";
+import ChatBox from "../../components/ChatBox";
 
 const Page = () => {
   const api = useApi();
@@ -13,7 +14,8 @@ const Page = () => {
   const [adInfo, setAdInfo] = useState({});
   const [isFavorite, setIsFavorite] = useState(false);
 
-  // Modal de denúncia
+  const [showChat, setShowChat] = useState(false);
+
   const [showReportModal, setShowReportModal] = useState(false);
   const [reportReason, setReportReason] = useState("");
   const [reportDetails, setReportDetails] = useState("");
@@ -28,7 +30,7 @@ const Page = () => {
       setLoading(false);
     };
     getAdInfo(id);
-  }, [id]);
+  }, [id, api]);
 
   const handleFavorite = async () => {
     try {
@@ -162,17 +164,12 @@ const Page = () => {
                       <small>E-mail: {adInfo.userInfo.email}</small>
                     </div>
 
-                    <a
-                      href={`mailto:${adInfo.userInfo.email}?subject=Interesse no anúncio: ${encodeURIComponent(
-                        adInfo.title
-                      )}&body=Olá ${
-                        adInfo.userInfo.name
-                      }, tenho interesse no seu anúncio "${adInfo.title}". Podemos conversar?`}
-                      target="_blank"
-                      rel="noreferrer"
+                    <button
+                      className="chatButton"
+                      onClick={() => setShowChat((prev) => !prev)}
                     >
-                      Falar com o vendedor
-                    </a>
+                      💬 Falar com o vendedor
+                    </button>
 
                     <button
                       className="reportButton"
@@ -183,6 +180,14 @@ const Page = () => {
                   </>
                 )}
               </div>
+
+              {showChat && adInfo.userInfo && (
+                <ChatBox
+                  adId={id}
+                  sellerId={adInfo.userInfo.id || adInfo.idUser}
+                  sellerName={adInfo.userInfo.name}
+                />
+              )}
             </>
           )}
         </div>

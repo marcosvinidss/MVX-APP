@@ -14,9 +14,12 @@ import MyAccount from "./pages/MyAccount";
 import MyAds from "./pages/MyAds";
 import FavPage from "./pages/FavPage";
 
+// Página de mensagens (lista de conversas)
+import MessagesPage from "./pages/Messages";
+
 // Componentes auxiliares
 import RouteHandler from "./components/RouteHandler";
-import AdminRoute from './components/AdminRoute';
+import AdminRoute from "./components/AdminRoute";
 
 // Páginas de admin
 import AdminLogin from "./pages/admin/AdminLogin";
@@ -77,6 +80,16 @@ const AppRoutes = () => {
         element={
           <RouteHandler>
             <MyAccount />
+          </RouteHandler>
+        }
+      />
+
+      {/* Conversas / Messages */}
+      <Route
+        path="/messages"
+        element={
+          <RouteHandler>
+            <MessagesPage />
           </RouteHandler>
         }
       />

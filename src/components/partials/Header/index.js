@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { HeaderArea, SideMenu, Overlay } from "./styled";
 import { Link, useNavigate } from "react-router-dom";
 import { isLogged, doLogout } from "../../../helpers/AuthHandler";
-import { Menu, X } from "lucide-react";
+import { Menu, X, MessageCircle } from "lucide-react";
 
 const Header = () => {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -19,6 +19,14 @@ const Header = () => {
   const handleCreateAd = () => {
     if (logged) {
       navigate("/post-an-ad");
+    } else {
+      navigate("/signin");
+    }
+  };
+
+  const handleChatClick = () => {
+    if (logged) {
+      navigate("/messages");
     } else {
       navigate("/signin");
     }
@@ -49,6 +57,14 @@ const Header = () => {
           <div className="actions">
             {logged ? (
               <>
+                <button
+                  className="chatButton"
+                  title="Messages"
+                  onClick={handleChatClick}
+                >
+                  <MessageCircle size={26} />
+                </button>
+
                 <button className="menuButton" onClick={toggleMenu}>
                   {menuOpen ? <X size={28} /> : <Menu size={28} />}
                 </button>
@@ -74,7 +90,6 @@ const Header = () => {
               </>
             )}
           </div>
-
         </div>
       </HeaderArea>
 
@@ -89,12 +104,17 @@ const Header = () => {
           </li>
           <li>
             <Link to="/favorites" onClick={toggleMenu}>
-              Anúncios Favoritos
+              Favoritos
             </Link>
           </li>
           <li>
             <Link to="/my-account" onClick={toggleMenu}>
               Minha Conta
+            </Link>
+          </li>
+          <li>
+            <Link to="/messages" onClick={toggleMenu}>
+              Conversas
             </Link>
           </li>
           <li>

@@ -252,10 +252,30 @@ const MvxApi = {
     return json.reports || [];
   },
 
-  getAdminUsers: async () => {
+    getAdminUsers: async () => {
     const json = await apiFetchAdminGet("/admin/users");
     return json.users || [];
   },
+
+  // -------------------- CHAT --------------------
+  getChatHistory: async (adId, otherUserId) => {
+    const token = Cookies.get("token");
+    const json = await apiFetchGet(`/chat/${adId}/${otherUserId}`, { token });
+    return json;
+  },
+
+  sendChatMessage: async (adId, receiverId, message) => {
+    const token = Cookies.get("token");
+    const json = await apiFetchPost(`/chat`, { token, adId, receiverId, message });
+    return json;
+  },
+    getUserChats: async () => {
+    // Não precisa mandar userId.
+    // O backend pega o usuário logado via token (Auth.private).
+    const json = await apiFetchGet("/chat/conversations");
+    return Array.isArray(json) ? json : [];
+  },
+
 };
 
 export default () => MvxApi;
