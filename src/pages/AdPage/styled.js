@@ -1,178 +1,287 @@
 import styled from "styled-components";
 
-export const PageContainer = styled.div`
-  max-width: 1000px;
-  margin: 40px auto;
-  padding: 0 15px;
+/* Container externo (fundo + centralização horizontal) */
+export const OverlayWrapper = styled.div`
+  width: 100%;
+  min-height: 100vh;
+  background-color: #f9f9f9;
+  font-family: "Open Sans", sans-serif;
+
+  display: flex;
+  justify-content: center;
+
+  padding: 24px 16px;
+  box-sizing: border-box;
+`;
+
+/* Container interno limitado, alinhando galeria + painel lateral */
+export const PageInner = styled.div`
+  width: 100%;
+  max-width: 1100px;
+  display: flex;
+  flex-direction: row;
+  gap: 24px;
+
+  @media (max-width: 1100px) {
+    flex-direction: column;
+  }
+`;
+
+export const GalleryArea = styled.div`
+  flex: 1.3;
   display: flex;
   flex-direction: column;
-  min-height: calc(100vh - 60px);
-  background-color: #f7f8fa;
+  align-items: center;
+  min-width: 0;
 `;
 
-export const PageArea = styled.div`
+/* imagem principal menor, centralizada e com boa proporção */
+export const MainImageWrapper = styled.div`
+  width: 100%;
+  max-width: 700px;
+  border-radius: 16px;
+  background-color: #fff;
+  border: 1px solid #ddd;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+
   display: flex;
-  gap: 28px;
-  margin-top: 25px;
+  justify-content: center;
+  align-items: center;
 
-  @media (max-width: 900px) {
-    flex-direction: column;
+  aspect-ratio: 4 / 3;
+  margin: 0 auto;
+`;
+
+export const MainImage = styled.img`
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+  border-radius: 16px;
+`;
+
+export const ThumbStrip = styled.div`
+  margin-top: 12px;
+  display: flex;
+  gap: 8px;
+  flex-wrap: nowrap;
+  max-width: 100%;
+  overflow-x: auto;
+  padding-bottom: 4px;
+
+  &::-webkit-scrollbar {
+    height: 6px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background-color: #d0d0d0;
+    border-radius: 4px;
   }
 
-  .box {
-    background-color: #fff;
+  .thumbBtn {
+    border: 2px solid transparent;
+    padding: 0;
     border-radius: 10px;
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
-    padding: 20px 24px;
+    background: #fff;
+    cursor: pointer;
+    flex-shrink: 0;
+    width: 60px;
+    height: 60px;
+    overflow: hidden;
+
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    border: 1px solid #ddd;
+
+    transition: all 0.15s ease;
   }
 
-  /* ---------- LADO ESQUERDO ---------- */
-  .leftSide {
-    flex: 2;
-
-    .adImage img {
-      width: 100%;
-      max-height: 500px;
-      object-fit: contain;
-      border-radius: 10px;
-      background-color: #fafafa;
-    }
-
-    .titleRow {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-top: 12px;
-    }
-
-    .favoriteBtn {
-      background: none;
-      border: none;
-      font-size: 28px;
-      cursor: pointer;
-      color: #ff7f00;
-      transition: transform 0.2s ease;
-    }
-
-    .favoriteBtn:hover {
-      transform: scale(1.15);
-    }
-
-    .adName h2 {
-      font-size: 24px;
-      color: #222;
-      margin-bottom: 4px;
-    }
-
-    small {
-      color: #999;
-    }
-
-    .adDescription {
-      margin-top: 18px;
-      line-height: 1.5;
-      color: #444;
-      font-size: 15px;
-    }
-
-    .adDescription .views {
-      color: #888;
-      margin-top: 10px;
-      font-size: 14px;
-    }
+  .thumbBtn.active,
+  .thumbBtn:hover {
+    border-color: #eab308;
+    box-shadow: 0 0 0 2px rgba(234, 179, 8, 0.3),
+      0 2px 10px rgba(0, 0, 0, 0.12);
   }
 
-  /* ---------- LADO DIREITO ---------- */
-  .rightSide {
-    flex: 1;
-    max-width: 340px;
+  .thumbBtn img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+  }
+`;
+
+export const SidePanel = styled.div`
+  flex: 0.7;
+  min-width: 320px;
+  max-width: 400px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+
+  @media (max-width: 1100px) {
+    max-width: 100%;
+    min-width: 0;
+  }
+`;
+
+export const PanelCard = styled.div`
+  background-color: #ffffff;
+  border-radius: 16px;
+  border: 1px solid #ddd;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  padding: 20px 20px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  color: #1e1e1e;
+  font-family: "Open Sans", sans-serif;
+
+  .sectionTitle {
+    font-size: 15px;
+    font-weight: 600;
+    color: #302e2e;
+    margin: 0;
+    letter-spacing: 0.2px;
+  }
+
+  .detailsGrid {
     display: flex;
     flex-direction: column;
-    gap: 18px;
+    gap: 10px;
+  }
 
-    .priceBox,
-    .contactBox {
-      background-color: #fff;
-      border-radius: 10px;
-      border: 1px solid #eee;
-      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
-      padding: 20px;
-    }
+  .row {
+    display: flex;
+    flex-direction: column;
+    font-size: 14px;
+    line-height: 1.4;
+  }
 
-    .price {
-      font-size: 32px;
-      font-weight: 700;
-      color: #ff7f00;
-      text-align: center;
-    }
+  .label {
+    color: #666;
+    font-weight: 500;
+    font-size: 13px;
+  }
 
-    .negotiable {
-      font-size: 18px;
-      font-weight: 600;
-      color: #008f39;
-      text-align: center;
-    }
+  .value {
+    color: #1e1e1e;
+    font-size: 14px;
+    font-weight: 500;
+  }
 
-    .createdBy {
-      font-size: 15px;
-      color: #444;
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-
-      strong {
-        color: #222;
-        font-weight: 600;
-      }
-
-      small {
-        color: #777;
-      }
-    }
-
-    /* Botão de contato */
-    .contactBox a {
-      display: block;
-      margin-top: 18px;
-      background-color: #ff7f00;
-      color: #fff;
-      text-align: center;
-      padding: 13px 0;
-      border-radius: 8px;
-      text-decoration: none;
-      font-weight: 700;
-      transition: all 0.25s ease;
-      box-shadow: 0 2px 8px rgba(255, 127, 0, 0.25);
-    }
-
-    .contactBox a:hover {
-      background-color: #e67300;
-      box-shadow: 0 3px 10px rgba(255, 127, 0, 0.35);
-    }
-
-    /* Botão de denúncia (mais discreto) */
-    .reportButton {
-      margin-top: 10px;
-      width: fit-content;
-      align-self: center;
-      background-color: transparent;
-      color: #d9534f;
-      font-size: 14px;
-      border: none;
-      padding: 6px 10px;
-      border-radius: 6px;
-      cursor: pointer;
-      font-weight: 500;
-      transition: all 0.25s ease;
-    }
-
-    .reportButton:hover {
-      background-color: rgba(217, 83, 79, 0.08);
-      transform: translateY(-1px);
-    }
+  .descText {
+    font-size: 14px;
+    line-height: 1.5;
+    color: #333;
+    margin: 0;
+    white-space: pre-line;
   }
 `;
 
+export const TitleRow = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+
+  .textBlock {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .adTitle {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: #1e1e1e;
+    line-height: 1.3;
+    letter-spacing: 0.2px;
+  }
+`;
+
+export const PriceText = styled.div`
+  font-size: ${(props) => (props.negociable ? "15px" : "22px")};
+  font-weight: ${(props) => (props.negociable ? "600" : "700")};
+  line-height: 1.3;
+  color: ${(props) => (props.negociable ? "#1E1E1E" : "#EAB308")};
+
+  background: ${(props) => (props.negociable ? "#fff9d6" : "transparent")};
+  border: ${(props) => (props.negociable ? "1px solid #EAB308" : "none")};
+  border-radius: 10px;
+  padding: ${(props) => (props.negociable ? "6px 10px" : "0")};
+
+  width: fit-content;
+`;
+
+export const InfoLine = styled.div`
+  font-size: 13px;
+  line-height: 1.4;
+
+  .muted {
+    color: #666;
+  }
+`;
+
+export const ActionRow = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+`;
+
+export const ActionButton = styled.button`
+  background-color: #302e2e;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  line-height: 1.2;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  &:hover {
+    background-color: #504d4d;
+  }
+`;
+
+export const MessageFooter = styled.div`
+  background-color: #ffffff;
+  border-radius: 16px;
+  border: 1px solid #ddd;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  padding: 16px;
+`;
+
+export const FooterButton = styled.button`
+  width: 100%;
+  background-color: #302e2e;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 12px 14px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  line-height: 1.2;
+  transition: all 0.2s ease;
+  text-align: center;
+
+  &:hover {
+    background-color: #504d4d;
+  }
+`;
+
+/* modal de denúncia */
 export const ReportModal = styled.div`
   position: fixed;
   inset: 0;
@@ -180,6 +289,7 @@ export const ReportModal = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
+  font-family: "Open Sans", sans-serif;
 
   .modalOverlay {
     position: absolute;
@@ -187,66 +297,62 @@ export const ReportModal = styled.div`
     background: rgba(0, 0, 0, 0.5);
     backdrop-filter: blur(3px);
     z-index: -1;
-    animation: fadeIn 0.3s ease;
+    animation: fadeIn 0.25s ease;
   }
 
   .modalContent {
-    background: #fff;
-    padding: 30px 35px;
-    border-radius: 12px;
+    background: #ffffff;
+    padding: 24px 28px;
+    border-radius: 16px;
     width: 95%;
-    max-width: 460px;
+    max-width: 440px;
     display: flex;
     flex-direction: column;
-    gap: 16px;
-    box-shadow: 0 8px 35px rgba(0, 0, 0, 0.25);
-    animation: scaleIn 0.3s ease forwards;
-    border-top: 5px solid #ff7f00;
+    gap: 14px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    border: 1px solid #ddd;
+    animation: scaleIn 0.25s ease forwards;
 
     h2 {
       margin: 0;
-      font-size: 22px;
-      font-weight: 700;
-      color: #222;
+      font-size: 18px;
+      font-weight: 600;
+      color: #fff;
       text-align: center;
-    }
-
-    p {
-      text-align: center;
-      color: #666;
-      font-size: 14px;
-      margin-top: -6px;
-      margin-bottom: 4px;
+      background-color: #302e2e;
+      border-radius: 10px;
+      padding: 10px 12px;
+      letter-spacing: 0.3px;
     }
 
     label {
-      font-size: 14px;
+      font-size: 13px;
       color: #333;
       font-weight: 500;
-      margin-top: 5px;
     }
 
     select,
     textarea {
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      padding: 10px 12px;
       font-size: 14px;
       outline: none;
-      transition: border-color 0.3s, box-shadow 0.3s;
-      background: #fafafa;
+      background: #fff;
+      transition: all 0.2s ease;
+      font-family: "Open Sans", sans-serif;
     }
 
     select:focus,
     textarea:focus {
-      border-color: #ff7f00;
-      box-shadow: 0 0 6px rgba(255, 127, 0, 0.3);
-      background: #fff;
+      border-color: #302e2e;
+      box-shadow: 0 0 0 2px rgba(48, 46, 46, 0.15);
     }
 
     textarea {
       resize: vertical;
       min-height: 90px;
+      line-height: 1.4;
     }
 
     .buttons {
@@ -254,36 +360,37 @@ export const ReportModal = styled.div`
       justify-content: space-between;
       gap: 10px;
       margin-top: 8px;
+    }
 
-      button {
-        flex: 1;
-        padding: 10px 18px;
-        border: none;
-        border-radius: 8px;
-        cursor: pointer;
-        font-weight: 600;
-        font-size: 14px;
-        transition: all 0.25s ease;
-      }
+    .buttons button {
+      flex: 1;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: 500;
+      font-size: 14px;
+      line-height: 1.2;
+      padding: 10px 14px;
+      transition: all 0.2s ease;
+      font-family: "Open Sans", sans-serif;
+    }
 
-      button:first-child {
-        background: #ff7f00;
-        color: #fff;
-        box-shadow: 0 2px 6px rgba(255, 127, 0, 0.3);
-      }
+    .buttons button:first-child {
+      background-color: #302e2e;
+      color: #fff;
+    }
 
-      button:first-child:hover {
-        background: #e67300;
-      }
+    .buttons button:first-child:hover {
+      background-color: #504d4d;
+    }
 
-      button:last-child {
-        background: #f1f1f1;
-        color: #333;
-      }
+    .buttons button:last-child {
+      background-color: #f1f1f1;
+      color: #333;
+    }
 
-      button:last-child:hover {
-        background: #e4e4e4;
-      }
+    .buttons button:last-child:hover {
+      background-color: #e4e4e4;
     }
   }
 
@@ -306,10 +413,4 @@ export const ReportModal = styled.div`
       transform: scale(1);
     }
   }
-`;
-
-export const Fake = styled.div`
-  background-color: #eee;
-  height: ${(props) => props.height || 20}px;
-  border-radius: 6px;
 `;

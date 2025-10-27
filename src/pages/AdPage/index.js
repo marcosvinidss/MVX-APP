@@ -1,21 +1,36 @@
 import React, { useEffect, useState, useRef } from "react";
-import { PageArea, PageContainer, Fake, ReportModal } from "./styled";
+import {
+  OverlayWrapper,
+  PageInner,
+  GalleryArea,
+  ThumbStrip,
+  MainImageWrapper,
+  MainImage,
+  SidePanel,
+  PanelCard,
+  TitleRow,
+  PriceText,
+  InfoLine,
+  ActionRow,
+  ActionButton,
+  MessageFooter,
+  FooterButton,
+  ReportModal,
+} from "./styled";
 import useApi from "../../helpers/MvxApi";
+import ChatBox from "../../components/ChatBox"; // importante!
 import { useParams } from "react-router-dom";
-import { Slide } from "react-slideshow-image";
-import "react-slideshow-image/dist/styles.css";
-import ChatBox from "../../components/ChatBox";
 
-const Page = () => {
+const AdViewPage = () => {
   const api = useApi();
   const { id } = useParams();
 
   const [loading, setLoading] = useState(true);
   const [adInfo, setAdInfo] = useState({});
+  const [activeImage, setActiveImage] = useState("");
   const [isFavorite, setIsFavorite] = useState(false);
 
-  const [showChat, setShowChat] = useState(false);
-
+  const [showChat, setShowChat] = useState(false); // ✅ restaurado
   const [showReportModal, setShowReportModal] = useState(false);
   const [reportReason, setReportReason] = useState("");
   const [reportDetails, setReportDetails] = useState("");
@@ -26,6 +41,7 @@ const Page = () => {
     const getAdInfo = async (id) => {
       const json = await api.getAd(id, true);
       setAdInfo(json);
+      if (json?.images && json.images.length > 0) setActiveImage(json.images[0]);
       if (json.isFavorite) setIsFavorite(true);
       setLoading(false);
     };
@@ -35,10 +51,14 @@ const Page = () => {
   const handleFavorite = async () => {
     try {
       await api.toggleFavorite(id);
-      setIsFavorite(!isFavorite);
-    } catch (err) {
-      console.error("Erro ao favoritar:", err);
+      setIsFavorite((prev) => !prev);
+    } catch (e) {
+      console.error(e);
     }
+  };
+
+  const handleSendMessage = () => {
+    setShowChat((prev) => !prev); // ✅ abre e fecha o ChatBox
   };
 
   const handleReportSubmit = async () => {
@@ -71,129 +91,94 @@ const Page = () => {
     } else {
       document.removeEventListener("mousedown", handleClickOutside);
     }
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [showReportModal]);
 
-  const formatDate = (date) => {
-    const cDate = new Date(date);
-    const months = [
-      "Janeiro", "Fevereiro", "Março", "Abril",
-      "Maio", "Junho", "Julho", "Agosto",
-      "Setembro", "Outubro", "Novembro", "Dezembro",
-    ];
-    return `${cDate.getDate()} de ${months[cDate.getMonth()]} de ${cDate.getFullYear()}`;
-  };
+  if (loading) {
+    return (
+      <OverlayWrapper>
+        <div style={{ color: "#302E2E", fontSize: 14 }}>Carregando...</div>
+      </OverlayWrapper>
+    );
+  }
 
   return (
-    <PageContainer>
-      <PageArea>
-        {/* ---------- LADO ESQUERDO ---------- */}
-        <div className="leftSide">
-          <div className="box">
-            <div className="adImage">
-              {loading && <Fake height={300} />}
-              {!loading && adInfo.images && adInfo.images.length > 0 && (
-                <Slide easing="ease" indicators autoplay duration={3000}>
-                  {adInfo.images.map((img, index) => (
-                    <div key={index} className="each-slide">
-                      <img src={img} alt={`slide-${index}`} />
-                    </div>
-                  ))}
-                </Slide>
-              )}
-            </div>
+    <OverlayWrapper>
+      <PageInner>
+        <GalleryArea>
+          <MainImageWrapper>
+            {activeImage && <MainImage src={activeImage} alt="" />}
+          </MainImageWrapper>
 
-            <div className="adInfo">
-              <div className="adName">
-                {loading && <Fake height={20} />}
-
-                {adInfo.title && (
-                  <div className="titleRow">
-                    <h2>{adInfo.title}</h2>
-                    <button
-                      onClick={handleFavorite}
-                      className="favoriteBtn"
-                      title={
-                        isFavorite
-                          ? "Remover dos favoritos"
-                          : "Adicionar aos favoritos"
-                      }
-                    >
-                      {isFavorite ? "💛" : "🤍"}
-                    </button>
-                  </div>
-                )}
-
-                {adInfo.dateCreated && (
-                  <small>Criado em {formatDate(adInfo.dateCreated)}</small>
-                )}
-              </div>
-
-              <div className="adDescription">
-                {loading && <Fake height={100} />}
-                {adInfo.description && <p>{adInfo.description}</p>}
-                {!loading && adInfo.views >= 0 && (
-                  <p className="views">{adInfo.views} visualizações</p>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* ---------- LADO DIREITO ---------- */}
-        <div className="rightSide">
-          {loading && <Fake height={100} />}
-          {!loading && (
-            <>
-              <div className="priceBox">
-                {adInfo.priceNegotiable ? (
-                  <div className="negotiable">Preço Negociável</div>
-                ) : (
-                  <div className="price">R$ {adInfo.price}</div>
-                )}
-              </div>
-
-              <div className="contactBox">
-                {adInfo.userInfo && (
-                  <>
-                    <div className="createdBy">
-                      Criado por:
-                      <strong>{adInfo.userInfo.name}</strong>
-                      <small>E-mail: {adInfo.userInfo.email}</small>
-                    </div>
-
-                    <button
-                      className="chatButton"
-                      onClick={() => setShowChat((prev) => !prev)}
-                    >
-                      💬 Falar com o vendedor
-                    </button>
-
-                    <button
-                      className="reportButton"
-                      onClick={() => setShowReportModal(true)}
-                    >
-                      🚨 Denunciar Usuário
-                    </button>
-                  </>
-                )}
-              </div>
-
-              {showChat && adInfo.userInfo && (
-                <ChatBox
-                  adId={id}
-                  sellerId={adInfo.userInfo.id || adInfo.idUser}
-                  sellerName={adInfo.userInfo.name}
-                />
-              )}
-            </>
+          {adInfo.images && adInfo.images.length > 1 && (
+            <ThumbStrip>
+              {adInfo.images.map((img, idx) => (
+                <button
+                  key={idx}
+                  className={`thumbBtn ${img === activeImage ? "active" : ""}`}
+                  onClick={() => setActiveImage(img)}
+                >
+                  <img src={img} alt={`thumb-${idx}`} />
+                </button>
+              ))}
+            </ThumbStrip>
           )}
-        </div>
-      </PageArea>
+        </GalleryArea>
 
-      {/* ---------- MODAL DE DENÚNCIA ---------- */}
+        <SidePanel>
+          <PanelCard>
+            <TitleRow>
+              <div className="textBlock">
+                <h1 className="adTitle">{adInfo.title}</h1>
+                {adInfo.priceNegotiable ? (
+                  <PriceText negociable>Preço negociável</PriceText>
+                ) : (
+                  <PriceText>R$ {adInfo.price}</PriceText>
+                )}
+              </div>
+
+              <div className="actionsBlock">
+                <ActionRow>
+                  <ActionButton onClick={handleSendMessage}>
+                    💬 Enviar mensagem
+                  </ActionButton>
+
+                  <ActionButton onClick={handleFavorite}>
+                    {isFavorite ? "💛 Salvo" : "🤍 Salvar"}
+                  </ActionButton>
+
+                  <ActionButton onClick={() => setShowReportModal(true)}>
+                    🚨 Denunciar
+                  </ActionButton>
+                </ActionRow>
+              </div>
+            </TitleRow>
+          </PanelCard>
+
+          <PanelCard>
+            <h2 className="sectionTitle">Detalhes</h2>
+            {adInfo.description && (
+              <p className="descText">{adInfo.description}</p>
+            )}
+          </PanelCard>
+
+          {/* ChatBox aparece aqui */}
+          {showChat && adInfo.userInfo && (
+            <ChatBox
+              adId={id}
+              sellerId={adInfo.userInfo.id || adInfo.idUser}
+              sellerName={adInfo.userInfo.name}
+            />
+          )}
+
+          <MessageFooter>
+            <FooterButton onClick={handleSendMessage}>
+              {showChat ? "Fechar chat" : "Enviar mensagem"}
+            </FooterButton>
+          </MessageFooter>
+        </SidePanel>
+      </PageInner>
+
       {showReportModal && (
         <ReportModal>
           <div className="modalOverlay" />
@@ -221,13 +206,15 @@ const Page = () => {
 
             <div className="buttons">
               <button onClick={handleReportSubmit}>Enviar</button>
-              <button onClick={() => setShowReportModal(false)}>Cancelar</button>
+              <button onClick={() => setShowReportModal(false)}>
+                Cancelar
+              </button>
             </div>
           </div>
         </ReportModal>
       )}
-    </PageContainer>
+    </OverlayWrapper>
   );
 };
 
-export default Page;
+export default AdViewPage;
