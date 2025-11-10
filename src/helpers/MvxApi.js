@@ -222,8 +222,8 @@ const MvxApi = {
     return Array.isArray(json)
       ? json
       : json?.favorites
-      ? json.favorites
-      : [];
+        ? json.favorites
+        : [];
   },
 
   reportAd: async (adId, reason, details) => {
@@ -252,7 +252,7 @@ const MvxApi = {
     return json.reports || [];
   },
 
-    getAdminUsers: async () => {
+  getAdminUsers: async () => {
     const json = await apiFetchAdminGet("/admin/users");
     return json.users || [];
   },
@@ -269,12 +269,34 @@ const MvxApi = {
     const json = await apiFetchPost(`/chat`, { token, adId, receiverId, message });
     return json;
   },
-    getUserChats: async () => {
+  getUserChats: async () => {
     // Não precisa mandar userId.
     // O backend pega o usuário logado via token (Auth.private).
     const json = await apiFetchGet("/chat/conversations");
     return Array.isArray(json) ? json : [];
   },
+  // --- PAGAMENTO (MOCK) ---
+  createMockPayment: async (adId, amount, buyerEmail) => {
+    // sem precisar mandar token no body (são rotas públicas no mock)
+    const res = await fetch(`${BASEAPI}/payment/mock/create`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ adId, amount, buyerEmail }),
+    });
+    return await res.json();
+  },
+
+  confirmMockPayment: async (paymentId) => {
+    const res = await fetch(`${BASEAPI}/payment/mock/confirm`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ paymentId }),
+    });
+    return await res.json();
+  },
+  getUserById: async (id) => apiFetchGet(`/user/${id}`),
+  createMockPayment: async (adId, amount, buyerEmail) => apiFetchPost('/payment/mock/create', { adId, amount, buyerEmail }),
+  confirmMockPayment: async (paymentId) => apiFetchPost('/payment/mock/confirm', { paymentId }),
 
 };
 

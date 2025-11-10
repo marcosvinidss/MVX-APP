@@ -18,7 +18,7 @@ import {
   ReportModal,
 } from "./styled";
 import useApi from "../../helpers/MvxApi";
-import ChatBox from "../../components/ChatBox"; // importante!
+import ChatBox from "../../components/ChatBox";
 import { useParams } from "react-router-dom";
 
 const AdViewPage = () => {
@@ -30,19 +30,38 @@ const AdViewPage = () => {
   const [activeImage, setActiveImage] = useState("");
   const [isFavorite, setIsFavorite] = useState(false);
 
-  const [showChat, setShowChat] = useState(false); // ✅ restaurado
+  const [showChat, setShowChat] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
   const [reportReason, setReportReason] = useState("");
   const [reportDetails, setReportDetails] = useState("");
 
+  // Pagamento (mock + PIX)
+  const [showPayModal, setShowPayModal] = useState(false);
+  const [paymentId, setPaymentId] = useState(null);
+  const [buyerEmail, setBuyerEmail] = useState("");
+  const [creatingPayment, setCreatingPayment] = useState(false);
+  const [confirmingPayment, setConfirmingPayment] = useState(false);
+  const [sellerPix, setSellerPix] = useState("");
+
   const modalRef = useRef();
 
   useEffect(() => {
-    const getAdInfo = async (id) => {
-      const json = await api.getAd(id, true);
+    const getAdInfo = async (adId) => {
+      const json = await api.getAd(adId, true);
       setAdInfo(json);
       if (json?.images && json.images.length > 0) setActiveImage(json.images[0]);
       if (json.isFavorite) setIsFavorite(true);
+
+      // buscar chave PIX do vendedor
+      if (json?.userInfo?.id || json?.idUser) {
+        const sellerId = json.userInfo?.id || json.idUser;
+        const seller = await api.getUserById(sellerId);
+        if (seller?.pixKey) {
+          setSellerPix(seller.pixKey);
+        } else {
+          setSellerPix(null);
+        }
+      }
       setLoading(false);
     };
     getAdInfo(id);
@@ -52,13 +71,11 @@ const AdViewPage = () => {
     try {
       await api.toggleFavorite(id);
       setIsFavorite((prev) => !prev);
-    } catch (e) {
-      console.error(e);
-    }
+    } catch {}
   };
 
   const handleSendMessage = () => {
-    setShowChat((prev) => !prev); // ✅ abre e fecha o ChatBox
+    setShowChat((prev) => !prev);
   };
 
   const handleReportSubmit = async () => {
@@ -66,33 +83,78 @@ const AdViewPage = () => {
       alert("Por favor, selecione um motivo antes de enviar.");
       return;
     }
-
     try {
       const res = await api.reportAd(id, reportReason, reportDetails);
       alert(res.message || "Denúncia enviada com sucesso!");
       setShowReportModal(false);
       setReportReason("");
       setReportDetails("");
-    } catch (err) {
-      console.error("Erro ao enviar denúncia:", err);
+    } catch {
       alert("Erro ao enviar denúncia. Tente novamente.");
     }
   };
 
-  const handleClickOutside = (e) => {
-    if (modalRef.current && !modalRef.current.contains(e.target)) {
-      setShowReportModal(false);
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (modalRef.current && !modalRef.current.contains(e.target)) {
+        setShowReportModal(false);
+        setShowPayModal(false);
+      }
+    };
+    if (showReportModal || showPayModal) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [showReportModal, showPayModal]);
+
+  const handleStartPayment = async () => {
+    try {
+      setCreatingPayment(true);
+      const me = await api.getUserInfo();
+      const email = me?.email || "comprador@exemplo.com";
+      setBuyerEmail(email);
+      const amount = adInfo?.price ?? 1;
+
+      // Se o vendedor não tiver PIX, apenas abre o modal informativo
+      if (!sellerPix) {
+        setShowPayModal(true);
+        setCreatingPayment(false);
+        return;
+      }
+
+      // Se tiver PIX, segue o fluxo mock para simular status
+      const resp = await api.createMockPayment(id, amount, email);
+      if (resp?.paymentId) {
+        setPaymentId(resp.paymentId);
+        setShowPayModal(true);
+      } else {
+        alert(resp?.error || "Não foi possível iniciar o pagamento simulado.");
+      }
+    } catch {
+      alert("Erro ao iniciar pagamento.");
+    } finally {
+      setCreatingPayment(false);
     }
   };
 
-  useEffect(() => {
-    if (showReportModal) {
-      document.addEventListener("mousedown", handleClickOutside);
-    } else {
-      document.removeEventListener("mousedown", handleClickOutside);
+  const handleConfirmPayment = async () => {
+    if (!paymentId) return;
+    try {
+      setConfirmingPayment(true);
+      const resp = await api.confirmMockPayment(paymentId);
+      if (resp?.ok) {
+        alert("Pagamento aprovado (simulado)!");
+        setShowPayModal(false);
+        setPaymentId(null);
+      } else {
+        alert(resp?.error || "Falha ao confirmar pagamento.");
+      }
+    } catch {
+      alert("Erro ao confirmar pagamento.");
+    } finally {
+      setConfirmingPayment(false);
     }
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [showReportModal]);
+  };
 
   if (loading) {
     return (
@@ -107,7 +169,13 @@ const AdViewPage = () => {
       <PageInner>
         <GalleryArea>
           <MainImageWrapper>
-            {activeImage && <MainImage src={activeImage} alt="" />}
+            {activeImage && (
+              <MainImage
+                src={activeImage}
+                srcSet={`${activeImage}?w=800 1x, ${activeImage}?w=1600 2x`}
+                alt={adInfo.title || ""}
+              />
+            )}
           </MainImageWrapper>
 
           {adInfo.images && adInfo.images.length > 1 && (
@@ -140,15 +208,19 @@ const AdViewPage = () => {
               <div className="actionsBlock">
                 <ActionRow>
                   <ActionButton onClick={handleSendMessage}>
-                    💬 Enviar mensagem
+                    Enviar mensagem
                   </ActionButton>
 
                   <ActionButton onClick={handleFavorite}>
-                    {isFavorite ? "💛 Salvo" : "🤍 Salvar"}
+                    {isFavorite ? "Salvo" : "Salvar"}
                   </ActionButton>
 
                   <ActionButton onClick={() => setShowReportModal(true)}>
-                    🚨 Denunciar
+                    Denunciar
+                  </ActionButton>
+
+                  <ActionButton onClick={handleStartPayment} disabled={creatingPayment}>
+                    {creatingPayment ? "Iniciando..." : "Pagamento via PIX"}
                   </ActionButton>
                 </ActionRow>
               </div>
@@ -157,12 +229,19 @@ const AdViewPage = () => {
 
           <PanelCard>
             <h2 className="sectionTitle">Detalhes</h2>
-            {adInfo.description && (
-              <p className="descText">{adInfo.description}</p>
+            {adInfo.description && <p className="descText">{adInfo.description}</p>}
+            {adInfo.stateName && (
+              <InfoLine>
+                <span>Estado:</span> {adInfo.stateName}
+              </InfoLine>
+            )}
+            {adInfo.category?.name && (
+              <InfoLine>
+                <span>Categoria:</span> {adInfo.category.name}
+              </InfoLine>
             )}
           </PanelCard>
 
-          {/* ChatBox aparece aqui */}
           {showChat && adInfo.userInfo && (
             <ChatBox
               adId={id}
@@ -184,7 +263,6 @@ const AdViewPage = () => {
           <div className="modalOverlay" />
           <div className="modalContent scaleIn" ref={modalRef}>
             <h2>Denunciar Anúncio</h2>
-
             <label>Motivo:</label>
             <select
               value={reportReason}
@@ -202,13 +280,93 @@ const AdViewPage = () => {
               value={reportDetails}
               onChange={(e) => setReportDetails(e.target.value)}
               placeholder="Explique o motivo..."
-            ></textarea>
+            />
 
             <div className="buttons">
               <button onClick={handleReportSubmit}>Enviar</button>
-              <button onClick={() => setShowReportModal(false)}>
-                Cancelar
-              </button>
+              <button onClick={() => setShowReportModal(false)}>Cancelar</button>
+            </div>
+          </div>
+        </ReportModal>
+      )}
+
+      {showPayModal && (
+        <ReportModal>
+          <div className="modalOverlay" />
+          <div className="modalContent scaleIn" ref={modalRef}>
+            <h2>Pagamento via PIX</h2>
+
+            <div style={{ display: "grid", gap: 10, fontSize: 14 }}>
+              <div>
+                <strong>Anúncio:</strong> {adInfo?.title || "-"}
+              </div>
+              <div>
+                <strong>Valor:</strong> R$ {adInfo?.price ?? 1}
+              </div>
+              <div>
+                <strong>Comprador:</strong> {buyerEmail || "-"}
+              </div>
+
+              {sellerPix ? (
+                <>
+                  <div>
+                    <strong>Chave PIX do vendedor:</strong>{" "}
+                    <span style={{ color: "#107E8B" }}>{sellerPix}</span>
+                  </div>
+
+                  <div style={{ textAlign: "center", marginTop: 12 }}>
+                    <strong>Escaneie o QR Code abaixo para realizar o pagamento:</strong>
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "center",
+                        marginTop: 10,
+                      }}
+                    >
+                      <img
+                        src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=pix+${encodeURIComponent(
+                          sellerPix
+                        )}`}
+                        alt="QR Code PIX"
+                        style={{ borderRadius: 8, boxShadow: "0 2px 6px rgba(0,0,0,0.2)" }}
+                      />
+                    </div>
+                    <p style={{ fontSize: 12, marginTop: 8, color: "#555" }}>
+                      Abra o aplicativo do seu banco e escaneie o QR Code para enviar o valor.
+                    </p>
+                  </div>
+                </>
+              ) : (
+                <div
+                  style={{
+                    textAlign: "center",
+                    background: "#FFF6F6",
+                    border: "1px solid #FFD5D5",
+                    borderRadius: 8,
+                    padding: "14px 10px",
+                    marginTop: 10,
+                  }}
+                >
+                  <h3 style={{ color: "#C62828", marginBottom: 6 }}>
+                    Vendedor sem PIX cadastrado
+                  </h3>
+                  <p style={{ fontSize: 14, color: "#444" }}>
+                    O vendedor ainda não cadastrou uma chave PIX.
+                    <br />
+                    Use o chat para combinar outra forma de pagamento.
+                  </p>
+                </div>
+              )}
+
+              <div className="buttons" style={{ marginTop: 18 }}>
+                <button
+                  onClick={handleConfirmPayment}
+                  disabled={confirmingPayment || !sellerPix}
+                >
+                  {confirmingPayment ? "Confirmando..." : "Confirmar pagamento"}
+                </button>
+                <button onClick={() => setShowPayModal(false)}>Cancelar</button>
+              </div>
             </div>
           </div>
         </ReportModal>

@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import useApi from "../../helpers/MvxApi";
 import { PageArea } from "./styled";
-import Cookies from "js-cookie";
 
 const MinhaConta = () => {
   const api = useApi();
@@ -9,45 +8,70 @@ const MinhaConta = () => {
   const [loading, setLoading] = useState(true);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-  const [state, setState] = useState("");
+  const [stateId, setStateId] = useState(""); // armazena sempre o _id do estado
   const [statesList, setStatesList] = useState([]);
+  const [pixKey, setPixKey] = useState(""); // 🔹 novo campo
   const [message, setMessage] = useState("");
 
-  // carregar dados do usuário + estados
   useEffect(() => {
-    const getUserInfo = async () => {
+    const load = async () => {
       setLoading(true);
 
-      const user = await api.getUserInfo();
-      const states = await api.getStates();
+      const [user, states] = await Promise.all([
+        api.getUserInfo(),
+        api.getStates()
+      ]);
+
+      setStatesList(states || []);
 
       if (user) {
         setName(user.name || "");
         setEmail(user.email || "");
-        setState(user.state || ""); // aqui usamos o ID do estado
+        setPixKey(user.pixKey || "");
+
+        // Tentativas para preencher o select de estado corretamente:
+        // 1) Se backend já enviar stateId, usa direto
+        if (user.stateId) {
+          setStateId(user.stateId);
+        } else if (user.state) {
+          // 2) Se vier apenas o NOME do estado (como seu controller original fazia),
+          // tenta encontrar o _id correspondente na lista
+          const found = (states || []).find(s => {
+            // compara nome normalizado para evitar diferenças de caixa/acentos simples
+            const a = String(s.name || "").trim().toLowerCase();
+            const b = String(user.state || "").trim().toLowerCase();
+            return a === b;
+          });
+          if (found) setStateId(found._id);
+        }
       }
-      setStatesList(states);
 
       setLoading(false);
     };
 
-    getUserInfo();
-  }, []);
+    load();
+  }, [api]);
 
-  // salvar alterações
   const handleSave = async () => {
     setMessage("");
 
-    const token = Cookies.get("token");
-
-    const json = await api.updateUser({
+    const payload = {
       name,
       email,
-      state,
-      token, // necessário para o backend
-    });
+      state: stateId, // backend espera o _id aqui
+      pixKey: pixKey // 🔹 salva/atualiza a chave PIX
+    };
 
-    if (json.error) {
+    const json = await api.updateUser(payload);
+
+    if (json?.error) {
+      // quando o validator retorna objeto mapeado
+      if (typeof json.error === "object") {
+        const firstKey = Object.keys(json.error)[0];
+        const firstErr = json.error[firstKey]?.msg || "Erro ao atualizar.";
+        setMessage(firstErr);
+        return;
+      }
       setMessage(json.error);
     } else {
       setMessage("Dados atualizados com sucesso!");
@@ -83,14 +107,31 @@ const MinhaConta = () => {
 
             <label>
               <strong>Estado:</strong>
-              <select value={state} onChange={(e) => setState(e.target.value)}>
+              <select
+                value={stateId}
+                onChange={(e) => setStateId(e.target.value)}
+              >
                 <option value="">Selecione um estado</option>
-                {statesList.map((s, index) => (
-                  <option key={index} value={s._id}>
+                {statesList.map((s) => (
+                  <option key={s._id} value={s._id}>
                     {s.name}
                   </option>
                 ))}
               </select>
+            </label>
+
+            {/* 🔹 Campo de Chave PIX */}
+            <label>
+              <strong>Chave PIX do vendedor:</strong>
+              <input
+                type="text"
+                placeholder="CPF/CNPJ, e-mail, telefone ou chave aleatória"
+                value={pixKey}
+                onChange={(e) => setPixKey(e.target.value)}
+              />
+              <small style={{ color: "#666" }}>
+                Esta chave será usada no pagamento seguro via PIX.
+              </small>
             </label>
           </div>
 
