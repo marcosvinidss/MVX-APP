@@ -3,16 +3,26 @@ import qs from "qs";
 
 const BASEAPI = "http://localhost:5000";
 
-// -------------------- Helpers --------------------
+/* ==================== Token helpers ==================== */
+const getUserToken = () => Cookies.get("token");
+const userAuthHeader = () => {
+  const t = getUserToken();
+  return t ? { Authorization: `Bearer ${t}` } : {};
+};
 
+/* ==================== Core fetchers (compat) ==================== */
+/* Envia Authorization: Bearer e mantém compat com token no body/query */
 const apiFetchFile = async (endpoint, body) => {
   if (!body.get("token")) {
-    const token = Cookies.get("token");
-    if (token) body.append("token", token);
+    const token = getUserToken();
+    if (token) body.append("token", token); // legado
   }
 
   const res = await fetch(BASEAPI + endpoint, {
     method: "POST",
+    headers: {
+      ...userAuthHeader(), // novo
+    },
     body,
   });
 
@@ -22,12 +32,15 @@ const apiFetchFile = async (endpoint, body) => {
 
 const apiFetchFilePut = async (endpoint, body) => {
   if (!body.get("token")) {
-    const token = Cookies.get("token");
-    if (token) body.append("token", token);
+    const token = getUserToken();
+    if (token) body.append("token", token); // legado
   }
 
   const res = await fetch(BASEAPI + endpoint, {
     method: "PUT",
+    headers: {
+      ...userAuthHeader(), // novo
+    },
     body,
   });
 
@@ -37,8 +50,8 @@ const apiFetchFilePut = async (endpoint, body) => {
 
 const apiFetchPost = async (endpoint, body = {}) => {
   if (!body.token) {
-    const token = Cookies.get("token");
-    if (token) body.token = token;
+    const token = getUserToken();
+    if (token) body.token = token; // legado
   }
 
   const res = await fetch(BASEAPI + endpoint, {
@@ -46,24 +59,23 @@ const apiFetchPost = async (endpoint, body = {}) => {
     headers: {
       Accept: "application/json",
       "Content-Type": "application/json",
+      ...userAuthHeader(), // novo
     },
     body: JSON.stringify(body),
   });
 
   const json = await res.json();
-
   if (json.notallowed) {
     window.location.href = "/signin";
     return;
   }
-
   return json;
 };
 
 const apiFetchPut = async (endpoint, body = {}) => {
   if (!body.token) {
-    const token = Cookies.get("token");
-    if (token) body.token = token;
+    const token = getUserToken();
+    if (token) body.token = token; // legado
   }
 
   const res = await fetch(BASEAPI + endpoint, {
@@ -71,41 +83,44 @@ const apiFetchPut = async (endpoint, body = {}) => {
     headers: {
       Accept: "application/json",
       "Content-Type": "application/json",
+      ...userAuthHeader(), // novo
     },
     body: JSON.stringify(body),
   });
 
   const json = await res.json();
-
   if (json.notallowed) {
     window.location.href = "/signin";
     return;
   }
-
   return json;
 };
 
 const apiFetchGet = async (endpoint, body = {}) => {
   if (!body.token) {
-    const token = Cookies.get("token");
-    if (token) body.token = token;
+    const token = getUserToken();
+    if (token) body.token = token; // legado (query)
   }
 
-  const res = await fetch(`${BASEAPI + endpoint}?${qs.stringify(body)}`);
+  const res = await fetch(`${BASEAPI + endpoint}?${qs.stringify(body)}`, {
+    headers: {
+      Accept: "application/json",
+      ...userAuthHeader(), // novo
+    },
+  });
   const json = await res.json();
 
   if (json.notallowed) {
     window.location.href = "/signin";
     return;
   }
-
   return json;
 };
 
 const apiFetchDelete = async (endpoint, body = {}) => {
   if (!body.token) {
-    const token = Cookies.get("token");
-    if (token) body.token = token;
+    const token = getUserToken();
+    if (token) body.token = token; // legado
   }
 
   const res = await fetch(BASEAPI + endpoint, {
@@ -113,22 +128,20 @@ const apiFetchDelete = async (endpoint, body = {}) => {
     headers: {
       Accept: "application/json",
       "Content-Type": "application/json",
+      ...userAuthHeader(), // novo
     },
     body: JSON.stringify(body),
   });
 
   const json = await res.json();
-
   if (json.notallowed) {
     window.location.href = "/signin";
     return;
   }
-
   return json;
 };
 
-// -------------------- ADMIN HELPERS --------------------
-
+/* ==================== ADMIN HELPERS ==================== */
 const apiFetchAdminGet = async (endpoint) => {
   const adminToken = Cookies.get("adminToken");
 
@@ -150,24 +163,14 @@ const apiFetchAdminGet = async (endpoint) => {
   return json;
 };
 
-// -------------------- API --------------------
-
+/* ==================== API ==================== */
 const MvxApi = {
   baseURL: BASEAPI,
 
-  // Usuário comum
-  login: async (email, password) => {
-    return await apiFetchPost("/user/signin", { email, password });
-  },
-
-  register: async (name, email, password, stateLoc) => {
-    return await apiFetchPost("/user/signup", {
-      name,
-      email,
-      password,
-      state: stateLoc,
-    });
-  },
+  // ----- Usuário
+  login: async (email, password) => apiFetchPost("/user/signin", { email, password }),
+  register: async (name, email, password, stateLoc) =>
+    apiFetchPost("/user/signup", { name, email, password, state: stateLoc }),
 
   getStates: async () => {
     const json = await apiFetchGet("/states");
@@ -184,61 +187,46 @@ const MvxApi = {
     return json || [];
   },
 
-  getAd: async (id, other = false) => {
-    return await apiFetchGet("/ad/item", { id, other });
-  },
+  getAd: async (id, other = false) => apiFetchGet("/ad/item", { id, other }),
 
-  addAd: async (fData) => {
-    return await apiFetchFile("/ad/add", fData);
-  },
+  addAd: async (fData) => apiFetchFile("/ad/add", fData),
 
-  editAd: async (id, fData) => {
-    return await apiFetchFile(`/ad/${id}`, fData);
-  },
+  editAd: async (id, fData) => apiFetchFile(`/ad/${id}`, fData),
 
-  getUserInfo: async () => {
-    return await apiFetchGet("/user/me");
-  },
+  getUserInfo: async () => apiFetchGet("/user/me"),
 
-  updateUser: async (data) => {
-    return await apiFetchPut("/user/me", data);
-  },
+  updateUser: async (data) => apiFetchPut("/user/me", data),
 
   getMyAds: async () => {
     const json = await apiFetchGet("/ad/my-ads");
     return json.ads || [];
   },
 
-  deleteAd: async (id) => {
-    return await apiFetchDelete(`/ad/${id}`);
-  },
+  deleteAd: async (id) => apiFetchDelete(`/ad/${id}`),
 
+  // ----- Favoritos
   toggleFavorite: async (id) => {
-    return await apiFetchPost(`/ad/${id}/favorite`);
+    const json = await apiFetchPost(`/ad/${id}/favorite`);
+    if (json?.error) throw new Error(json.error);
+    // Normaliza formatos: { favorites, isFavorite, ok } OU { favorites }
+    return {
+      isFavorite: typeof json?.isFavorite === "boolean" ? json.isFavorite : undefined,
+      favorites: Array.isArray(json?.favorites) ? json.favorites : [],
+    };
   },
 
   getFavorites: async () => {
     const json = await apiFetchGet("/user/favorites");
-    return Array.isArray(json)
-      ? json
-      : json?.favorites
-        ? json.favorites
-        : [];
+    if (json?.error) throw new Error(json.error);
+    // aceita { favorites } ou array puro
+    return Array.isArray(json) ? json : Array.isArray(json?.favorites) ? json.favorites : [];
   },
 
-  reportAd: async (adId, reason, details) => {
-    const token = Cookies.get("token");
-    const json = await apiFetchPost("/report", {
-      token,
-      reportedAd: adId,
-      reason,
-      details,
-    });
-    return json;
-  },
+  // ----- Denúncia
+  reportAd: async (adId, reason, details) =>
+    apiFetchPost("/report", { reportedAd: adId, reason, details }),
 
-  // -------------------- ROTAS ADMIN --------------------
-
+  // ----- Admin
   adminLogin: async (email, password) => {
     const json = await apiFetchPost("/admin/login", { email, password });
     if (json.token) {
@@ -246,58 +234,33 @@ const MvxApi = {
     }
     return json;
   },
-
   getAdminReports: async () => {
     const json = await apiFetchAdminGet("/admin/reports");
     return json.reports || [];
   },
-
   getAdminUsers: async () => {
     const json = await apiFetchAdminGet("/admin/users");
     return json.users || [];
   },
 
-  // -------------------- CHAT --------------------
-  getChatHistory: async (adId, otherUserId) => {
-    const token = Cookies.get("token");
-    const json = await apiFetchGet(`/chat/${adId}/${otherUserId}`, { token });
-    return json;
-  },
-
-  sendChatMessage: async (adId, receiverId, message) => {
-    const token = Cookies.get("token");
-    const json = await apiFetchPost(`/chat`, { token, adId, receiverId, message });
-    return json;
-  },
+  // ----- Chat
+  getChatHistory: async (adId, otherUserId) => apiFetchGet(`/chat/${adId}/${otherUserId}`),
+  sendChatMessage: async (adId, receiverId, message) =>
+    apiFetchPost(`/chat`, { adId, receiverId, message }),
   getUserChats: async () => {
-    // Não precisa mandar userId.
-    // O backend pega o usuário logado via token (Auth.private).
     const json = await apiFetchGet("/chat/conversations");
     return Array.isArray(json) ? json : [];
   },
-  // --- PAGAMENTO (MOCK) ---
-  createMockPayment: async (adId, amount, buyerEmail) => {
-    // sem precisar mandar token no body (são rotas públicas no mock)
-    const res = await fetch(`${BASEAPI}/payment/mock/create`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ adId, amount, buyerEmail }),
-    });
-    return await res.json();
-  },
 
-  confirmMockPayment: async (paymentId) => {
-    const res = await fetch(`${BASEAPI}/payment/mock/confirm`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ paymentId }),
-    });
-    return await res.json();
-  },
+  // ----- Pagamento (Mock)
+  createMockPayment: async (adId, amount, buyerEmail) =>
+    apiFetchPost("/payment/mock/create", { adId, amount, buyerEmail }),
+
+  confirmMockPayment: async (paymentId) =>
+    apiFetchPost("/payment/mock/confirm", { paymentId }),
+
+  // ----- Util
   getUserById: async (id) => apiFetchGet(`/user/${id}`),
-  createMockPayment: async (adId, amount, buyerEmail) => apiFetchPost('/payment/mock/create', { adId, amount, buyerEmail }),
-  confirmMockPayment: async (paymentId) => apiFetchPost('/payment/mock/confirm', { paymentId }),
-
 };
 
 export default () => MvxApi;

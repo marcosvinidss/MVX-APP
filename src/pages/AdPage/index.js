@@ -35,7 +35,6 @@ const AdViewPage = () => {
   const [reportReason, setReportReason] = useState("");
   const [reportDetails, setReportDetails] = useState("");
 
-  // Pagamento (mock + PIX)
   const [showPayModal, setShowPayModal] = useState(false);
   const [paymentId, setPaymentId] = useState(null);
   const [buyerEmail, setBuyerEmail] = useState("");
@@ -48,19 +47,14 @@ const AdViewPage = () => {
   useEffect(() => {
     const getAdInfo = async (adId) => {
       const json = await api.getAd(adId, true);
-      setAdInfo(json);
+      setAdInfo(json || {});
       if (json?.images && json.images.length > 0) setActiveImage(json.images[0]);
-      if (json.isFavorite) setIsFavorite(true);
-
-      // buscar chave PIX do vendedor
+      setIsFavorite(!!json?.isFavorite);
       if (json?.userInfo?.id || json?.idUser) {
         const sellerId = json.userInfo?.id || json.idUser;
         const seller = await api.getUserById(sellerId);
-        if (seller?.pixKey) {
-          setSellerPix(seller.pixKey);
-        } else {
-          setSellerPix(null);
-        }
+        if (seller?.pixKey) setSellerPix(seller.pixKey);
+        else setSellerPix(null);
       }
       setLoading(false);
     };
@@ -79,13 +73,10 @@ const AdViewPage = () => {
   };
 
   const handleReportSubmit = async () => {
-    if (!reportReason) {
-      alert("Por favor, selecione um motivo antes de enviar.");
-      return;
-    }
+    if (!reportReason) return alert("Por favor, selecione um motivo antes de enviar.");
     try {
       const res = await api.reportAd(id, reportReason, reportDetails);
-      alert(res.message || "Denúncia enviada com sucesso!");
+      alert(res?.message || "Denúncia enviada com sucesso!");
       setShowReportModal(false);
       setReportReason("");
       setReportDetails("");
@@ -114,15 +105,11 @@ const AdViewPage = () => {
       const email = me?.email || "comprador@exemplo.com";
       setBuyerEmail(email);
       const amount = adInfo?.price ?? 1;
-
-      // Se o vendedor não tiver PIX, apenas abre o modal informativo
       if (!sellerPix) {
         setShowPayModal(true);
         setCreatingPayment(false);
         return;
       }
-
-      // Se tiver PIX, segue o fluxo mock para simular status
       const resp = await api.createMockPayment(id, amount, email);
       if (resp?.paymentId) {
         setPaymentId(resp.paymentId);
@@ -168,15 +155,41 @@ const AdViewPage = () => {
     <OverlayWrapper>
       <PageInner>
         <GalleryArea>
-          <MainImageWrapper>
-            {activeImage && (
-              <MainImage
-                src={activeImage}
-                srcSet={`${activeImage}?w=800 1x, ${activeImage}?w=1600 2x`}
-                alt={adInfo.title || ""}
-              />
-            )}
-          </MainImageWrapper>
+          <div style={{ position: "relative" }}>
+            <MainImageWrapper>
+              {activeImage && (
+                <MainImage
+                  src={activeImage}
+                  srcSet={`${activeImage}?w=800 1x, ${activeImage}?w=1600 2x`}
+                  alt={adInfo.title || ""}
+                />
+              )}
+            </MainImageWrapper>
+
+            <button
+              onClick={handleFavorite}
+              aria-label={isFavorite ? "Remover dos favoritos" : "Adicionar aos favoritos"}
+              style={{
+                position: "absolute",
+                top: 12,
+                right: 12,
+                width: 44,
+                height: 44,
+                borderRadius: 999,
+                border: "none",
+                background: "rgba(0,0,0,0.6)",
+                color: "#fff",
+                cursor: "pointer",
+                display: "grid",
+                placeItems: "center",
+                boxShadow: "0 2px 8px rgba(0,0,0,.25)",
+                backdropFilter: "blur(2px)",
+                zIndex: 4
+              }}
+            >
+              <span style={{ fontSize: 20 }}>{isFavorite ? "💛" : "🤍"}</span>
+            </button>
+          </div>
 
           {adInfo.images && adInfo.images.length > 1 && (
             <ThumbStrip>
@@ -196,8 +209,23 @@ const AdViewPage = () => {
         <SidePanel>
           <PanelCard>
             <TitleRow>
-              <div className="textBlock">
-                <h1 className="adTitle">{adInfo.title}</h1>
+              <div className="textBlock" style={{ width: "100%" }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+                  <h1 className="adTitle" style={{ margin: 0 }}>{adInfo.title}</h1>
+                  <button
+                    onClick={handleFavorite}
+                    aria-label={isFavorite ? "Remover dos favoritos" : "Adicionar aos favoritos"}
+                    style={{
+                      background: "none",
+                      border: "none",
+                      cursor: "pointer",
+                      fontSize: 26,
+                      lineHeight: 1
+                    }}
+                  >
+                    {isFavorite ? "💛" : "🤍"}
+                  </button>
+                </div>
                 {adInfo.priceNegotiable ? (
                   <PriceText negociable>Preço negociável</PriceText>
                 ) : (
@@ -207,18 +235,9 @@ const AdViewPage = () => {
 
               <div className="actionsBlock">
                 <ActionRow>
-                  <ActionButton onClick={handleSendMessage}>
-                    Enviar mensagem
-                  </ActionButton>
-
-                  <ActionButton onClick={handleFavorite}>
-                    {isFavorite ? "Salvo" : "Salvar"}
-                  </ActionButton>
-
-                  <ActionButton onClick={() => setShowReportModal(true)}>
-                    Denunciar
-                  </ActionButton>
-
+                  <ActionButton onClick={handleSendMessage}>Enviar mensagem</ActionButton>
+                  <ActionButton onClick={handleFavorite}>{isFavorite ? "Salvo" : "Salvar"}</ActionButton>
+                  <ActionButton onClick={() => setShowReportModal(true)}>Denunciar</ActionButton>
                   <ActionButton onClick={handleStartPayment} disabled={creatingPayment}>
                     {creatingPayment ? "Iniciando..." : "Pagamento via PIX"}
                   </ActionButton>

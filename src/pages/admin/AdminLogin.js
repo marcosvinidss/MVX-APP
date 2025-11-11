@@ -11,43 +11,53 @@ import {
   LogoArea
 } from "./styled";
 
+const API =
+  (import.meta && import.meta.env && import.meta.env.VITE_API_URL) ||
+  process.env.REACT_APP_API_URL ||
+  "http://localhost:5000";
+
 const AdminLogin = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const safeParse = async (res) => {
+    const ct = res.headers.get("content-type") || "";
+    if (ct.includes("application/json")) return await res.json();
+    const text = await res.text();
+    return { msg: text || "Resposta não JSON" };
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (loading) return;
     setError("");
-
+    setLoading(true);
     try {
-      const res = await fetch("http://localhost:5000/admin/login", {
+      const controller = new AbortController();
+      const t = setTimeout(() => controller.abort(), 15000);
+      const res = await fetch(`${API}/admin/login`, {
         method: "POST",
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-        },
+        headers: { Accept: "application/json", "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
+        signal: controller.signal
       });
-
-      const json = await res.json();
-
-      // 🔍 verifica se a resposta tem token válido
+      clearTimeout(t);
+      const json = await safeParse(res);
       if (res.ok && json.token) {
-        // salva o token e dados do admin
         localStorage.setItem("adminToken", json.token);
-        localStorage.setItem("adminData", JSON.stringify(json.admin));
-
-        // redireciona para o painel
-        navigate("/admin");
-      } else {
-        // mostra erro retornado pelo backend (msg ou error)
-        setError(json.msg || json.error || "E-mail ou senha incorretos.");
+        if (json.admin) localStorage.setItem("adminData", JSON.stringify(json.admin));
+        navigate("/admin", { replace: true });
+        return;
       }
+      const msg = json?.msg || json?.error || `Falha no login (${res.status})`;
+      setError(typeof msg === "string" ? msg : "E-mail ou senha incorretos.");
     } catch (err) {
-      console.error("Erro ao conectar com o servidor:", err);
-      setError("Erro ao conectar com o servidor.");
+      setError(err?.name === "AbortError" ? "Tempo de conexão esgotado." : "Erro ao conectar com o servidor.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -57,31 +67,29 @@ const AdminLogin = () => {
         <LogoArea>
           <img src="/img/MVX.png" alt="MVX Logo" />
         </LogoArea>
-
         <LoginTitle>Área Administrativa</LoginTitle>
-
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} noValidate>
           <LoginInput
             type="email"
             placeholder="E-mail"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
+            autoComplete="email"
           />
-
           <LoginInput
             type="password"
             placeholder="Senha"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
+            autoComplete="current-password"
           />
-
           {error && <ErrorMsg>{error}</ErrorMsg>}
-
-          <LoginButton type="submit">Entrar</LoginButton>
+          <LoginButton type="submit" disabled={loading}>
+            {loading ? "Entrando..." : "Entrar"}
+          </LoginButton>
         </form>
-
         <FooterNote>
           <a href="/">Voltar ao site</a>
         </FooterNote>

@@ -1,7 +1,6 @@
 import React from "react";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 
-// Páginas gerais
 import Home from "./pages/Home";
 import About from "./pages/About";
 import NotFound from "./pages/NotFound";
@@ -13,22 +12,33 @@ import Ads from "./pages/Ads";
 import MyAccount from "./pages/MyAccount";
 import MyAds from "./pages/MyAds";
 import FavPage from "./pages/FavPage";
-
-// Página de mensagens (lista de conversas)
 import MessagesPage from "./pages/Messages";
 
-// Componentes auxiliares
 import RouteHandler from "./components/RouteHandler";
-import AdminRoute from "./components/AdminRoute";
 
-// Páginas de admin
 import AdminLogin from "./pages/admin/AdminLogin";
 import AdminDashboard from "./pages/admin/AdminDashboard";
+
+// Guard embutido: só deixa entrar se houver adminToken
+const RequireAdmin = ({ children }) => {
+  const adminToken = localStorage.getItem("adminToken");
+  if (!adminToken) {
+    return <Navigate to="/admin/login" replace />;
+  }
+  return children;
+};
+
+// Se já tem adminToken, não deixa ver a tela de login admin
+const AdminLoginGate = ({ children }) => {
+  const adminToken = localStorage.getItem("adminToken");
+  if (adminToken) return <Navigate to="/admin" replace />;
+  return children;
+};
 
 const AppRoutes = () => {
   return (
     <Routes>
-      {/* Páginas públicas */}
+      {/* Públicas */}
       <Route path="/" element={<Home />} />
       <Route path="/about" element={<About />} />
       <Route path="/signin" element={<SignIn />} />
@@ -36,7 +46,7 @@ const AppRoutes = () => {
       <Route path="/ad/:id" element={<AdPage />} />
       <Route path="/ads" element={<Ads />} />
 
-      {/* Criar ou Editar anúncio */}
+      {/* Criar/Editar anúncio */}
       <Route
         path="/post-an-ad"
         element={
@@ -84,7 +94,7 @@ const AppRoutes = () => {
         }
       />
 
-      {/* Conversas / Messages */}
+      {/* Mensagens */}
       <Route
         path="/messages"
         element={
@@ -94,18 +104,22 @@ const AppRoutes = () => {
         }
       />
 
-      {/* --- ROTAS ADMIN --- */}
+      {/* Admin */}
+      <Route
+        path="/admin/login"
+        element={
+          <AdminLoginGate>
+            <AdminLogin />
+          </AdminLoginGate>
+        }
+      />
 
-      {/* Login do admin */}
-      <Route path="/admin/login" element={<AdminLogin />} />
-
-      {/* Painel protegido do admin */}
       <Route
         path="/admin"
         element={
-          <AdminRoute>
+          <RequireAdmin>
             <AdminDashboard />
-          </AdminRoute>
+          </RequireAdmin>
         }
       />
 

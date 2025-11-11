@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   AdminContainer,
   Section,
@@ -12,7 +13,13 @@ import {
   SearchInput,
 } from "./styled";
 
+const API =
+  (import.meta && import.meta.env && import.meta.env.VITE_API_URL) ||
+  process.env.REACT_APP_API_URL ||
+  "http://localhost:5000";
+
 const AdminDashboard = () => {
+  const navigate = useNavigate();
   const [users, setUsers] = useState([]);
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -20,66 +27,81 @@ const AdminDashboard = () => {
   const [searchUser, setSearchUser] = useState("");
   const [searchReport, setSearchReport] = useState("");
 
-  // 🔄 Carregar dados
+  const requireAdmin = () => {
+    const t = localStorage.getItem("adminToken");
+    if (!t) {
+      navigate("/admin/login", { replace: true });
+      return null;
+    }
+    return t;
+  };
+
   const loadData = async () => {
+    const token = requireAdmin();
+    if (!token) return;
     try {
       setLoading(true);
       setError("");
-
       const [usersRes, reportsRes] = await Promise.all([
-        fetch("http://localhost:5000/admin/users"),
-        fetch("http://localhost:5000/admin/reports"),
+        fetch(`${API}/admin/users`, { headers: { Authorization: `Bearer ${token}` } }),
+        fetch(`${API}/admin/reports`, { headers: { Authorization: `Bearer ${token}` } }),
       ]);
-
       const usersJson = await usersRes.json();
       const reportsJson = await reportsRes.json();
-
       const parsedUsers = Array.isArray(usersJson)
         ? usersJson
         : Array.isArray(usersJson.users)
         ? usersJson.users
         : [];
-
       const parsedReports = Array.isArray(reportsJson)
         ? reportsJson
         : Array.isArray(reportsJson.reports)
         ? reportsJson.reports
         : [];
-
       setUsers(parsedUsers);
       setReports(parsedReports);
     } catch (err) {
-      console.error("❌ Erro ao carregar dados:", err);
       setError("Erro ao carregar os dados do servidor.");
     } finally {
       setLoading(false);
     }
   };
 
-  // 🚫 Banir usuário
   const handleBanUser = async (id) => {
+    const token = requireAdmin();
+    if (!token) return;
     if (!window.confirm("Tem certeza que deseja banir este usuário?")) return;
     try {
-      const res = await fetch(`http://localhost:5000/admin/user/${id}`, {
+      const res = await fetch(`${API}/admin/user/${id}`, {
         method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
       });
-
       if (!res.ok) throw new Error("Erro ao banir usuário");
       setUsers((prev) => prev.filter((u) => u._id !== id));
-    } catch (err) {
-      console.error(err);
+    } catch {
       alert("Erro ao banir usuário.");
     }
   };
 
+  const handleLogout = () => {
+    localStorage.removeItem("adminToken");
+    localStorage.removeItem("adminData");
+    navigate("/admin/login", { replace: true });
+  };
+
   useEffect(() => {
+    const t = localStorage.getItem("adminToken");
+    if (!t) {
+      navigate("/admin/login", { replace: true });
+      return;
+    }
     loadData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   if (loading) return <p>Carregando dados...</p>;
   if (error) return <p style={{ color: "red" }}>{error}</p>;
 
-  // 🔍 Filtros
   const filteredUsers = users.filter(
     (u) =>
       u.name?.toLowerCase().includes(searchUser.toLowerCase()) ||
@@ -95,21 +117,18 @@ const AdminDashboard = () => {
 
   return (
     <AdminContainer>
-      {/* 🧩 Logo */}
-      <div style={{ textAlign: "center", marginBottom: "20px" }}>
-        <img
-          src="/img/MVX.png"
-          alt="MVX Logo"
-          style={{ width: "140px", height: "auto" }}
-        />
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
+        <div style={{ textAlign: "left" }}>
+          <img src="/img/MVX.png" alt="MVX Logo" style={{ width: 120, height: "auto" }} />
+        </div>
+        <button onClick={handleLogout} style={{ padding: "8px 14px", borderRadius: 8, border: "none", cursor: "pointer" }}>
+          Sair
+        </button>
       </div>
 
-      <h1 style={{ textAlign: "center", marginBottom: "30px" }}>
-        Painel Administrativo
-      </h1>
+      <h1 style={{ textAlign: "center", marginBottom: 30 }}>Painel Administrativo</h1>
 
       <DualSectionContainer>
-        {/* === USUÁRIOS === */}
         <Section>
           <SectionTitle>Usuários Cadastrados</SectionTitle>
           <SearchInput
@@ -118,7 +137,6 @@ const AdminDashboard = () => {
             value={searchUser}
             onChange={(e) => setSearchUser(e.target.value)}
           />
-
           {filteredUsers.length === 0 ? (
             <p>Nenhum usuário encontrado.</p>
           ) : (
@@ -136,9 +154,7 @@ const AdminDashboard = () => {
                     <TableCell>{user.name || "—"}</TableCell>
                     <TableCell>{user.email || "—"}</TableCell>
                     <TableCell>
-                      <DeleteButton onClick={() => handleBanUser(user._id)}>
-                        Banir
-                      </DeleteButton>
+                      <DeleteButton onClick={() => handleBanUser(user._id)}>Banir</DeleteButton>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -147,7 +163,6 @@ const AdminDashboard = () => {
           )}
         </Section>
 
-        {/* === DENÚNCIAS === */}
         <Section>
           <SectionTitle>Denúncias</SectionTitle>
           <SearchInput
@@ -156,7 +171,6 @@ const AdminDashboard = () => {
             value={searchReport}
             onChange={(e) => setSearchReport(e.target.value)}
           />
-
           {filteredReports.length === 0 ? (
             <p>Nenhuma denúncia registrada.</p>
           ) : (
@@ -177,18 +191,14 @@ const AdminDashboard = () => {
                   <TableRow key={r._id}>
                     <TableCell>{r._id}</TableCell>
                     <TableCell>
-                      {r.reporter
-                        ? `${r.reporter.name || "—"} (${r.reporter.email || "—"})`
-                        : "—"}
+                      {r.reporter ? `${r.reporter.name || "—"} (${r.reporter.email || "—"})` : "—"}
                     </TableCell>
                     <TableCell>
-                      {r.reportedUser
-                        ? `${r.reportedUser.name || "—"} (${r.reportedUser.email || "—"})`
-                        : "—"}
+                      {r.reportedUser ? `${r.reportedUser.name || "—"} (${r.reportedUser.email || "—"})` : "—"}
                     </TableCell>
                     <TableCell>{r.reportedAd?.title || "—"}</TableCell>
                     <TableCell>{r.reason || "—"}</TableCell>
-                    <TableCell style={{ maxWidth: "200px", whiteSpace: "pre-wrap" }}>
+                    <TableCell style={{ maxWidth: 200, whiteSpace: "pre-wrap" }}>
                       {r.details || "—"}
                     </TableCell>
                     <TableCell>{r.status || "pendente"}</TableCell>
