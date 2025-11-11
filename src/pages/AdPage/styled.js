@@ -21,6 +21,7 @@ export const PageInner = styled.div`
   display: flex;
   flex-direction: row;
   gap: 24px;
+  margin-top: 8px;
 
   @media (max-width: 1100px) {
     flex-direction: column;
@@ -97,10 +98,12 @@ export const ThumbStrip = styled.div`
   }
 
   .thumbBtn.active,
-  .thumbBtn:hover {
+  .thumbBtn:hover,
+  .thumbBtn:focus-visible {
     border-color: #eab308;
     box-shadow: 0 0 0 2px rgba(234, 179, 8, 0.3),
       0 2px 10px rgba(0, 0, 0, 0.12);
+    outline: none;
   }
 
   .thumbBtn img {
@@ -139,7 +142,6 @@ export const PanelCard = styled.div`
   flex-direction: column;
   gap: 16px;
   color: #1e1e1e;
-  font-family: "Open Sans", sans-serif;
 
   .sectionTitle {
     font-size: 15px;
@@ -222,6 +224,12 @@ export const InfoLine = styled.div`
   font-size: 13px;
   line-height: 1.4;
 
+  span {
+    font-weight: 600;
+    color: #444;
+    margin-right: 4px;
+  }
+
   .muted {
     color: #666;
   }
@@ -252,6 +260,11 @@ export const ActionButton = styled.button`
   &:hover {
     background-color: #504d4d;
   }
+
+  &:focus-visible {
+    outline: 2px solid #eab308;
+    outline-offset: 2px;
+  }
 `;
 
 export const MessageFooter = styled.div`
@@ -278,6 +291,11 @@ export const FooterButton = styled.button`
 
   &:hover {
     background-color: #504d4d;
+  }
+
+  &:focus-visible {
+    outline: 2px solid #eab308;
+    outline-offset: 2px;
   }
 `;
 
@@ -395,22 +413,12 @@ export const ReportModal = styled.div`
   }
 
   @keyframes fadeIn {
-    from {
-      opacity: 0;
-    }
-    to {
-      opacity: 1;
-    }
+    from { opacity: 0; }
+    to { opacity: 1; }
   }
 
   @keyframes scaleIn {
-    from {
-      opacity: 0;
-      transform: scale(0.9);
-    }
-    to {
-      opacity: 1;
-      transform: scale(1);
-    }
+    from { opacity: 0; transform: scale(0.9); }
+    to { opacity: 1; transform: scale(1); }
   }
 `;

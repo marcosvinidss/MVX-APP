@@ -1,16 +1,27 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   AdminContainer,
+  TopBar,
+  LogoImg,
+  LogoutBtn,
+  H1,
+  SummaryGrid,
+  SummaryCard,
+  SummaryLabel,
+  SummaryValue,
+  DualSectionContainer,
   Section,
   SectionTitle,
-  Table,
-  TableHeader,
-  TableRow,
-  TableCell,
-  DeleteButton,
-  DualSectionContainer,
   SearchInput,
+  TableScroll,
+  Table,
+  TableRow,
+  TableHeader,
+  TableCell,
+  DangerButton,
+  NeutralButton,
+  Pill,
 } from "./styled";
 
 const API =
@@ -48,19 +59,10 @@ const AdminDashboard = () => {
       ]);
       const usersJson = await usersRes.json();
       const reportsJson = await reportsRes.json();
-      const parsedUsers = Array.isArray(usersJson)
-        ? usersJson
-        : Array.isArray(usersJson.users)
-        ? usersJson.users
-        : [];
-      const parsedReports = Array.isArray(reportsJson)
-        ? reportsJson
-        : Array.isArray(reportsJson.reports)
-        ? reportsJson.reports
-        : [];
-      setUsers(parsedUsers);
-      setReports(parsedReports);
+      setUsers(Array.isArray(usersJson) ? usersJson : usersJson?.users || []);
+      setReports(Array.isArray(reportsJson) ? reportsJson : reportsJson?.reports || []);
     } catch (err) {
+      console.error(err);
       setError("Erro ao carregar os dados do servidor.");
     } finally {
       setLoading(false);
@@ -90,8 +92,7 @@ const AdminDashboard = () => {
   };
 
   useEffect(() => {
-    const t = localStorage.getItem("adminToken");
-    if (!t) {
+    if (!localStorage.getItem("adminToken")) {
       navigate("/admin/login", { replace: true });
       return;
     }
@@ -99,36 +100,64 @@ const AdminDashboard = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  if (loading) return <p>Carregando dados...</p>;
-  if (error) return <p style={{ color: "red" }}>{error}</p>;
-
-  const filteredUsers = users.filter(
-    (u) =>
-      u.name?.toLowerCase().includes(searchUser.toLowerCase()) ||
-      u.email?.toLowerCase().includes(searchUser.toLowerCase())
+  const filteredUsers = useMemo(
+    () =>
+      users.filter(
+        (u) =>
+          u.name?.toLowerCase().includes(searchUser.toLowerCase()) ||
+          u.email?.toLowerCase().includes(searchUser.toLowerCase())
+      ),
+    [users, searchUser]
   );
 
-  const filteredReports = reports.filter(
-    (r) =>
-      r.reporter?.name?.toLowerCase().includes(searchReport.toLowerCase()) ||
-      r.reportedUser?.name?.toLowerCase().includes(searchReport.toLowerCase()) ||
-      r.reason?.toLowerCase().includes(searchReport.toLowerCase())
+  const filteredReports = useMemo(
+    () =>
+      reports.filter((r) => {
+        const needle = searchReport.toLowerCase();
+        return (
+          r.reporter?.name?.toLowerCase().includes(needle) ||
+          r.reportedUser?.name?.toLowerCase().includes(needle) ||
+          r.reason?.toLowerCase().includes(needle) ||
+          r.status?.toLowerCase().includes(needle)
+        );
+      }),
+    [reports, searchReport]
   );
+
+  if (loading) return <AdminContainer>Carregando dados...</AdminContainer>;
+  if (error) return <AdminContainer><p style={{ color: "red" }}>{error}</p></AdminContainer>;
+
+  /* contadores para os cards */
+  const usersCount = users.length;
+  const pendingCount = reports.filter((r) => (r.status || "pendente") === "pendente").length;
+  const resolvedCount = reports.filter((r) => r.status === "resolvido").length;
 
   return (
     <AdminContainer>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
-        <div style={{ textAlign: "left" }}>
-          <img src="/img/MVX.png" alt="MVX Logo" style={{ width: 120, height: "auto" }} />
-        </div>
-        <button onClick={handleLogout} style={{ padding: "8px 14px", borderRadius: 8, border: "none", cursor: "pointer" }}>
-          Sair
-        </button>
-      </div>
+      <TopBar>
+        <LogoImg src="/img/MVX.png" alt="MVX" />
+        <LogoutBtn onClick={handleLogout}>Sair</LogoutBtn>
+      </TopBar>
 
-      <h1 style={{ textAlign: "center", marginBottom: 30 }}>Painel Administrativo</h1>
+      <H1>Painel Administrativo</H1>
+
+      <SummaryGrid>
+        <SummaryCard>
+          <SummaryValue>{usersCount}</SummaryValue>
+          <SummaryLabel>Usuários ativos</SummaryLabel>
+        </SummaryCard>
+        <SummaryCard>
+          <SummaryValue>{pendingCount}</SummaryValue>
+          <SummaryLabel>Denúncias pendentes</SummaryLabel>
+        </SummaryCard>
+        <SummaryCard>
+          <SummaryValue>{resolvedCount}</SummaryValue>
+          <SummaryLabel>Denúncias resolvidas</SummaryLabel>
+        </SummaryCard>
+      </SummaryGrid>
 
       <DualSectionContainer>
+        {/* ===== USUÁRIOS ===== */}
         <Section>
           <SectionTitle>Usuários Cadastrados</SectionTitle>
           <SearchInput
@@ -137,10 +166,13 @@ const AdminDashboard = () => {
             value={searchUser}
             onChange={(e) => setSearchUser(e.target.value)}
           />
-          {filteredUsers.length === 0 ? (
-            <p>Nenhum usuário encontrado.</p>
-          ) : (
+          <TableScroll>
             <Table>
+              <colgroup>
+                <col style={{ width: "38%" }} />
+                <col style={{ width: "42%" }} />
+                <col style={{ width: "20%" }} />
+              </colgroup>
               <thead>
                 <TableRow>
                   <TableHeader>Nome</TableHeader>
@@ -149,37 +181,49 @@ const AdminDashboard = () => {
                 </TableRow>
               </thead>
               <tbody>
-                {filteredUsers.map((user) => (
-                  <TableRow key={user._id}>
-                    <TableCell>{user.name || "—"}</TableCell>
-                    <TableCell>{user.email || "—"}</TableCell>
-                    <TableCell>
-                      <DeleteButton onClick={() => handleBanUser(user._id)}>Banir</DeleteButton>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                {filteredUsers.length === 0 ? (
+                  <TableRow><TableCell colSpan={3}>Nenhum usuário encontrado.</TableCell></TableRow>
+                ) : (
+                  filteredUsers.map((user) => (
+                    <TableRow key={user._id}>
+                      <TableCell className="nowrap">{user.name || "—"}</TableCell>
+                      <TableCell>{user.email || "—"}</TableCell>
+                      <TableCell>
+                        <DangerButton onClick={() => handleBanUser(user._id)}>Banir</DangerButton>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
               </tbody>
             </Table>
-          )}
+          </TableScroll>
         </Section>
 
+        {/* ===== DENÚNCIAS ===== */}
         <Section>
           <SectionTitle>Denúncias</SectionTitle>
           <SearchInput
             type="text"
-            placeholder="Pesquisar denúncia..."
+            placeholder="Pesquisar por denunciante, motivo ou status..."
             value={searchReport}
             onChange={(e) => setSearchReport(e.target.value)}
           />
-          {filteredReports.length === 0 ? (
-            <p>Nenhuma denúncia registrada.</p>
-          ) : (
+          <TableScroll>
             <Table>
+              <colgroup>
+                <col style={{ width: "12%" }} />  {/* ID com largura fixa para não “quebrar” char por linha */}
+                <col style={{ width: "15%" }} />
+                <col style={{ width: "14%" }} />
+                <col style={{ width: "16%" }} />
+                <col style={{ width: "12%" }} />
+                <col style={{ width: "19%" }} />
+                <col style={{ width: "12%" }} />
+              </colgroup>
               <thead>
                 <TableRow>
                   <TableHeader>ID</TableHeader>
                   <TableHeader>Denunciante</TableHeader>
-                  <TableHeader>Usuário Denunciado</TableHeader>
+                  <TableHeader>Usuário denunciado</TableHeader>
                   <TableHeader>Anúncio</TableHeader>
                   <TableHeader>Motivo</TableHeader>
                   <TableHeader>Detalhes</TableHeader>
@@ -187,26 +231,36 @@ const AdminDashboard = () => {
                 </TableRow>
               </thead>
               <tbody>
-                {filteredReports.map((r) => (
-                  <TableRow key={r._id}>
-                    <TableCell>{r._id}</TableCell>
-                    <TableCell>
-                      {r.reporter ? `${r.reporter.name || "—"} (${r.reporter.email || "—"})` : "—"}
-                    </TableCell>
-                    <TableCell>
-                      {r.reportedUser ? `${r.reportedUser.name || "—"} (${r.reportedUser.email || "—"})` : "—"}
-                    </TableCell>
-                    <TableCell>{r.reportedAd?.title || "—"}</TableCell>
-                    <TableCell>{r.reason || "—"}</TableCell>
-                    <TableCell style={{ maxWidth: 200, whiteSpace: "pre-wrap" }}>
-                      {r.details || "—"}
-                    </TableCell>
-                    <TableCell>{r.status || "pendente"}</TableCell>
-                  </TableRow>
-                ))}
+                {filteredReports.length === 0 ? (
+                  <TableRow><TableCell colSpan={7}>Nenhuma denúncia registrada.</TableCell></TableRow>
+                ) : (
+                  filteredReports.map((r) => (
+                    <TableRow key={r._id}>
+                      <TableCell className="idCell">{r._id}</TableCell>
+                      <TableCell>
+                        {r.reporter ? `${r.reporter.name || "—"} (${r.reporter.email || "—"})` : "—"}
+                      </TableCell>
+                      <TableCell>
+                        {r.reportedUser ? `${r.reportedUser.name || "—"} (${r.reportedUser.email || "—"})` : "—"}
+                      </TableCell>
+                      <TableCell className="adCell">
+                        {r.reportedAd?.title ? <a href={`/ad/${r.reportedAd?._id || ""}`}>{r.reportedAd.title}</a> : "—"}
+                      </TableCell>
+                      <TableCell>{r.reason || "—"}</TableCell>
+                      <TableCell className="detailsCell">{r.details || "—"}</TableCell>
+                      <TableCell>
+                        <Pill data-status={(r.status || "pendente").toLowerCase()}>
+                          {r.status || "pendente"}
+                        </Pill>
+                        {/* exemplo de ação rápida (opcional) */}
+                        {/* <NeutralButton style={{ marginLeft: 8 }}>Marcar pendente</NeutralButton> */}
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
               </tbody>
             </Table>
-          )}
+          </TableScroll>
         </Section>
       </DualSectionContainer>
     </AdminContainer>

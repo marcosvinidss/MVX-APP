@@ -210,22 +210,7 @@ const AdViewPage = () => {
           <PanelCard>
             <TitleRow>
               <div className="textBlock" style={{ width: "100%" }}>
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
-                  <h1 className="adTitle" style={{ margin: 0 }}>{adInfo.title}</h1>
-                  <button
-                    onClick={handleFavorite}
-                    aria-label={isFavorite ? "Remover dos favoritos" : "Adicionar aos favoritos"}
-                    style={{
-                      background: "none",
-                      border: "none",
-                      cursor: "pointer",
-                      fontSize: 26,
-                      lineHeight: 1
-                    }}
-                  >
-                    {isFavorite ? "💛" : "🤍"}
-                  </button>
-                </div>
+                <h1 className="adTitle" style={{ margin: 0 }}>{adInfo.title}</h1>
                 {adInfo.priceNegotiable ? (
                   <PriceText negociable>Preço negociável</PriceText>
                 ) : (
@@ -236,7 +221,6 @@ const AdViewPage = () => {
               <div className="actionsBlock">
                 <ActionRow>
                   <ActionButton onClick={handleSendMessage}>Enviar mensagem</ActionButton>
-                  <ActionButton onClick={handleFavorite}>{isFavorite ? "Salvo" : "Salvar"}</ActionButton>
                   <ActionButton onClick={() => setShowReportModal(true)}>Denunciar</ActionButton>
                   <ActionButton onClick={handleStartPayment} disabled={creatingPayment}>
                     {creatingPayment ? "Iniciando..." : "Pagamento via PIX"}
