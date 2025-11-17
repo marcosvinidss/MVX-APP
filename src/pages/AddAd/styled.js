@@ -1,12 +1,15 @@
 import styled from "styled-components";
 
 export const PageContainer = styled.div`
-  background: linear-gradient(to bottom, #f4f4f4, #eaeaea);
+  background: radial-gradient(circle at top, #ffffff 0, #f4f4f4 45%, #e4e4e4 100%);
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  box-sizing: border-box;
+  font-family: "Inter", sans-serif;
 `;
 
+/* se você não usar PageTitle e ErrorMessage daqui, pode remover esses dois exports sem problema */
 export const PageTitle = styled.h1`
   font-size: 40px;
   font-weight: 800;
@@ -14,7 +17,6 @@ export const PageTitle = styled.h1`
   text-align: center;
   margin-bottom: 40px;
   user-select: none;
-  letter-spacing: -0.5px;
 `;
 
 export const ErrorMessage = styled.div`
@@ -33,114 +35,107 @@ export const ErrorMessage = styled.div`
 `;
 
 export const PageArea = styled.div`
-  margin: 30px auto; /* margem pequena do header e footer */
-  max-width: 600px; /* evita que o conteúdo fique muito largo */
+  max-width: 850px;
   width: 100%;
+  margin: 60px auto 70px; /* respiro do header e do footer */
   display: flex;
-  flex-direction: column;
+  justify-content: center;
+  animation: fadeIn 0.3s ease;
 
   form {
+    width: 100%;
     background-color: #ffffff;
-    border-radius: 12px;
-    padding: 40px 50px;
-    box-shadow: 0 10px 32px rgba(0, 0, 0, 0.1);
+    border-radius: 18px;
+    padding: 48px 56px 40px;
+    box-shadow: 0 18px 50px rgba(0, 0, 0, 0.18);
     display: flex;
     flex-direction: column;
-    justify-content: center;
-    position: relative;
   }
 
   .form-title {
-    font-size: 32px;
-    font-weight: 700;
-    color: #2c2c2c;
+    font-size: 30px;
+    font-weight: 800;
+    color: #111827;
     text-align: center;
-    margin-bottom: 30px;
-    user-select: none;
+    margin-bottom: 32px;
+    letter-spacing: -0.4px;
   }
 
   .area {
+    margin-bottom: 22px;
     display: flex;
     flex-direction: column;
-    margin-bottom: 24px;
 
     &.checkbox-area {
       flex-direction: row;
       align-items: center;
-      margin-top: 12px;
 
       .area--title {
-        width: auto;
+        margin-bottom: 0;
         margin-right: 10px;
-        font-size: 15px;
-        color: #444;
       }
 
       .area--input {
-        flex: none;
+        display: flex;
+        align-items: center;
+      }
 
-        input[type="checkbox"] {
-          width: 16px;
-          height: 16px;
-          accent-color: #302e2e;
-          cursor: pointer;
-        }
+      input[type="checkbox"] {
+        width: 18px;
+        height: 18px;
+        accent-color: #302e2e;
+        cursor: pointer;
       }
     }
 
     .area--title {
       font-weight: 600;
-      font-size: 16px;
+      font-size: 15px;
       margin-bottom: 6px;
-      color: #333;
+      color: #374151;
     }
 
     .area--input {
-      input[type="text"],
-      input[type="email"],
-      input[type="password"],
+      width: 100%;
+
+      input,
       textarea,
-      select {
+      select,
+      .price-input {
         width: 100%;
         font-size: 15px;
         padding: 12px 14px;
-        border: 2px solid #ddd;
-        border-radius: 8px;
+        border: 2px solid #d4d4d4;
+        border-radius: 10px;
         outline: none;
-        color: #302e2e;
-        background-color: #fff;
-        transition: all 0.3s ease;
+        color: #111827;
+        background-color: #ffffff;
+        transition: border-color 0.25s ease, box-shadow 0.25s ease;
 
         &:focus {
-          border-color: #302e2e;
-          box-shadow: 0 0 10px rgba(48, 46, 46, 0.3);
+          border-color: #111111;
+          box-shadow: 0 0 0 1px #11111133;
         }
       }
 
       textarea {
         resize: vertical;
-        min-height: 100px;
-      }
-
-      select {
-        appearance: none;
-        cursor: pointer;
+        min-height: 120px;
       }
 
       .existing-images {
         display: flex;
         flex-wrap: wrap;
-        gap: 10px;
-        max-width: 100%; /* garante que não saia do container */
-        overflow: hidden;
+        gap: 12px;
 
         .image-item {
           position: relative;
+
           img {
-            width: 100px;
-            height: 100px;
+            width: 110px;
+            height: 110px;
             object-fit: cover;
-            border-radius: 8px;
+            border-radius: 10px;
             border: 1px solid #ddd;
           }
 
@@ -148,85 +143,68 @@ export const PageArea = styled.div`
             position: absolute;
             top: -6px;
             right: -6px;
-            background-color: #ff5c5c;
+            background-color: #ef4444;
             border: none;
-            color: #fff;
+            color: #ffffff;
             border-radius: 50%;
-            width: 22px;
-            height: 22px;
-            cursor: pointer;
+            width: 24px;
+            height: 24px;
             font-size: 12px;
-            font-weight: bold;
-            line-height: 22px;
-            text-align: center;
+            cursor: pointer;
           }
         }
       }
     }
   }
 
-  .area:last-child .area--input {
-    width: 100%;
-  }
-
   button {
     width: 100%;
-    background-color: #302e2e;
+    background-color: #111111;
     border: none;
     padding: 15px 0;
-    border-radius: 10px;
-    color: #fff;
-    font-size: 16.5px;
-    font-weight: 600;
+    border-radius: 999px;
+    color: #ffffff;
+    font-size: 16px;
+    font-weight: 700;
     cursor: pointer;
-    transition: background-color 0.3s ease, box-shadow 0.3s ease;
-    box-shadow: 0 6px 18px rgba(48, 46, 46, 0.25);
+    transition: 0.2s;
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.35);
 
     &:hover {
-      background-color: #1f1c1c;
-      box-shadow: 0 8px 24px rgba(31, 28, 28, 0.35);
+      background-color: #000000;
+      transform: translateY(-1px);
+      box-shadow: 0 14px 34px rgba(0, 0, 0, 0.45);
+    }
+
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
     }
   }
 
-  .signup-link {
-    margin-top: 30px;
-    text-align: center;
-    font-size: 14px;
-    color: #666;
-    user-select: none;
-
-    a {
-      color: #302e2e;
-      font-weight: 600;
-      margin-left: 6px;
-      text-decoration: none;
-      transition: color 0.3s ease;
-
-      &:hover {
-        color: #000;
-        text-decoration: underline;
-      }
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
     }
   }
 
-  @media (max-width: 600px) {
-    margin: 20px auto; /* reduz no mobile */
+  @media (max-width: 720px) {
+    margin: 40px auto 50px;
+
     form {
-      padding: 30px 20px;
+      padding: 32px 20px 28px;
+      border-radius: 16px;
     }
 
     .form-title {
-      font-size: 28px;
-    }
-
-    .area--input input,
-    .area--input textarea,
-    .area--input select {
-      font-size: 14px;
-    }
-
-    button {
-      font-size: 15px;
+      font-size: 26px;
     }
   }
 `;

@@ -1,6 +1,5 @@
 import styled from "styled-components";
 
-/* Container externo (fundo + centralização horizontal) */
 export const OverlayWrapper = styled.div`
   width: 100%;
   min-height: 100vh;
@@ -14,7 +13,6 @@ export const OverlayWrapper = styled.div`
   box-sizing: border-box;
 `;
 
-/* Container interno limitado, alinhando galeria + painel lateral */
 export const PageInner = styled.div`
   width: 100%;
   max-width: 1100px;
@@ -32,11 +30,11 @@ export const GalleryArea = styled.div`
   flex: 1.3;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: stretch;
+  gap: 16px;
   min-width: 0;
 `;
 
-/* imagem principal menor, centralizada e com boa proporção */
 export const MainImageWrapper = styled.div`
   width: 100%;
   max-width: 700px;
@@ -51,7 +49,6 @@ export const MainImageWrapper = styled.div`
   align-items: center;
 
   aspect-ratio: 4 / 3;
-  margin: 0 auto;
 `;
 
 export const MainImage = styled.img`
@@ -64,7 +61,7 @@ export const MainImage = styled.img`
 `;
 
 export const ThumbStrip = styled.div`
-  margin-top: 12px;
+  margin-top: 4px;
   display: flex;
   gap: 8px;
   flex-wrap: nowrap;
@@ -299,7 +296,6 @@ export const FooterButton = styled.button`
   }
 `;
 
-/* modal de denúncia */
 export const ReportModal = styled.div`
   position: fixed;
   inset: 0;

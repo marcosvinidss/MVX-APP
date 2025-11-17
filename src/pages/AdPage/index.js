@@ -204,6 +204,21 @@ const AdViewPage = () => {
               ))}
             </ThumbStrip>
           )}
+
+          <PanelCard>
+            <h2 className="sectionTitle">Detalhes</h2>
+            {adInfo.description && <p className="descText">{adInfo.description}</p>}
+            {adInfo.stateName && (
+              <InfoLine>
+                <span>Estado:</span> {adInfo.stateName}
+              </InfoLine>
+            )}
+            {adInfo.category?.name && (
+              <InfoLine>
+                <span>Categoria:</span> {adInfo.category.name}
+              </InfoLine>
+            )}
+          </PanelCard>
         </GalleryArea>
 
         <SidePanel>
@@ -228,21 +243,6 @@ const AdViewPage = () => {
                 </ActionRow>
               </div>
             </TitleRow>
-          </PanelCard>
-
-          <PanelCard>
-            <h2 className="sectionTitle">Detalhes</h2>
-            {adInfo.description && <p className="descText">{adInfo.description}</p>}
-            {adInfo.stateName && (
-              <InfoLine>
-                <span>Estado:</span> {adInfo.stateName}
-              </InfoLine>
-            )}
-            {adInfo.category?.name && (
-              <InfoLine>
-                <span>Categoria:</span> {adInfo.category.name}
-              </InfoLine>
-            )}
           </PanelCard>
 
           {showChat && adInfo.userInfo && (

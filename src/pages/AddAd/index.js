@@ -17,9 +17,8 @@ const AddAd = () => {
   const location = useLocation();
 
   const query = new URLSearchParams(location.search);
-  const adId = query.get("id"); // se existir, é edição
+  const adId = query.get("id");
 
-  // Estados do formulário
   const [title, setTitle] = useState("");
   const [price, setPrice] = useState("");
   const [priceNegotiable, setPriceNegotiable] = useState(false);
@@ -31,7 +30,6 @@ const AddAd = () => {
   const [disable, setDisable] = useState(false);
   const [error, setError] = useState("");
 
-  // Máscara de preço
   const priceMask = createNumberMask({
     prefix: "R$ ",
     includeThousandsSeparator: true,
@@ -40,7 +38,6 @@ const AddAd = () => {
     decimalSymbol: ",",
   });
 
-  // Carregar categorias
   useEffect(() => {
     const loadCategories = async () => {
       const cats = await api.getCategories();
@@ -49,7 +46,6 @@ const AddAd = () => {
     loadCategories();
   }, [api]);
 
-  // Carregar anúncio para edição
   useEffect(() => {
     if (!adId) return;
 
@@ -107,21 +103,12 @@ const AddAd = () => {
     formData.append("priceneg", priceNegotiable);
     formData.append("desc", desc);
     formData.append("cat", category);
-
-    // Mantém apenas imagens existentes
     formData.append("images", JSON.stringify(existingImages));
+    images.forEach((file) => formData.append("img", file));
 
-    // Adiciona imagens novas
-    images.forEach((file) => {
-      formData.append("img", file);
-    });
-
-    let json;
-    if (adId) {
-      json = await api.editAd(adId, formData);
-    } else {
-      json = await api.addAd(formData);
-    }
+    const json = adId
+      ? await api.editAd(adId, formData)
+      : await api.addAd(formData);
 
     if (json.error) {
       setError(json.error);
@@ -176,6 +163,7 @@ const AddAd = () => {
             <div className="area--title">Preço</div>
             <div className="area--input">
               <MaskedInput
+                className="price-input"
                 mask={priceMask}
                 placeholder="R$ 0,00"
                 disabled={disable}
@@ -208,7 +196,6 @@ const AddAd = () => {
             </div>
           </label>
 
-          {/* Imagens existentes */}
           <label className="area">
             <div className="area--title">Imagens Existentes</div>
             <div className="area--input existing-images">
@@ -226,7 +213,6 @@ const AddAd = () => {
             </div>
           </label>
 
-          {/* Novas imagens */}
           <label className="area">
             <div className="area--title">Adicionar novas imagens</div>
             <div className="area--input">
@@ -242,7 +228,7 @@ const AddAd = () => {
           </label>
 
           <label className="area">
-            <div className="area--title"></div>
+            <div className="area--title" />
             <div className="area--input">
               <button disabled={disable}>
                 {adId ? "Salvar Alterações" : "Postar Anúncio"}
