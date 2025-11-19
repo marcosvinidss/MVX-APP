@@ -23,6 +23,19 @@ import {
   DangerButton,
   NeutralButton,
   Pill,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalTitle,
+  CloseButton,
+  ModalBody,
+  ModalFieldGroup,
+  ModalField,
+  ModalFieldLabel,
+  ModalFieldValue,
+  ModalDivider,
+  ModalTagRow,
+  TagChip,
 } from "./styled";
 
 const API =
@@ -38,6 +51,8 @@ const AdminDashboard = () => {
   const [error, setError] = useState("");
   const [searchUser, setSearchUser] = useState("");
   const [searchReport, setSearchReport] = useState("");
+  const [selectedReport, setSelectedReport] = useState(null);
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
 
   const requireAdmin = () => {
     const t = localStorage.getItem("adminToken");
@@ -91,12 +106,41 @@ const AdminDashboard = () => {
           : r
       )
     );
+    setSelectedReport((prev) =>
+      prev && prev._id === id
+        ? {
+            ...prev,
+            status: (prev.status || "pendente") === "pendente" ? "resolvido" : "pendente",
+          }
+        : prev
+    );
   };
 
   const handleLogout = () => {
     localStorage.removeItem("adminToken");
     localStorage.removeItem("adminData");
     navigate("/admin/login", { replace: true });
+  };
+
+  const openReportModal = (report) => {
+    setSelectedReport(report);
+    setIsReportModalOpen(true);
+  };
+
+  const closeReportModal = () => {
+    setIsReportModalOpen(false);
+    setSelectedReport(null);
+  };
+
+  const formatDateTime = (value) => {
+    if (!value) return "—";
+    try {
+      const d = new Date(value);
+      if (Number.isNaN(d.getTime())) return "—";
+      return d.toLocaleString("pt-BR");
+    } catch {
+      return "—";
+    }
   };
 
   useEffect(() => {
@@ -131,8 +175,19 @@ const AdminDashboard = () => {
     [reports, searchReport]
   );
 
-  if (loading) return <AdminWrapper><AdminContainer>Carregando...</AdminContainer></AdminWrapper>;
-  if (error) return <AdminWrapper><AdminContainer>{error}</AdminContainer></AdminWrapper>;
+  if (loading)
+    return (
+      <AdminWrapper>
+        <AdminContainer>Carregando...</AdminContainer>
+      </AdminWrapper>
+    );
+
+  if (error)
+    return (
+      <AdminWrapper>
+        <AdminContainer>{error}</AdminContainer>
+      </AdminWrapper>
+    );
 
   const usersCount = users.length;
   const pendingCount = reports.filter((r) => (r.status || "pendente") === "pendente").length;
@@ -166,7 +221,11 @@ const AdminDashboard = () => {
         <DualSectionContainer>
           <Section>
             <SectionTitle>Usuários</SectionTitle>
-            <SearchInput value={searchUser} onChange={(e) => setSearchUser(e.target.value)} placeholder="Pesquisar usuário..." />
+            <SearchInput
+              value={searchUser}
+              onChange={(e) => setSearchUser(e.target.value)}
+              placeholder="Pesquisar usuário por nome ou e-mail..."
+            />
             <TableScroll>
               <Table>
                 <thead>
@@ -178,13 +237,17 @@ const AdminDashboard = () => {
                 </thead>
                 <tbody>
                   {filteredUsers.length === 0 ? (
-                    <TableRow><TableCell colSpan={3}>Nenhum usuário encontrado</TableCell></TableRow>
+                    <TableRow>
+                      <TableCell colSpan={3}>Nenhum usuário encontrado</TableCell>
+                    </TableRow>
                   ) : (
                     filteredUsers.map((u) => (
                       <TableRow key={u._id}>
                         <TableCell>{u.name || "—"}</TableCell>
                         <TableCell>{u.email || "—"}</TableCell>
-                        <TableCell><DangerButton onClick={() => handleBanUser(u._id)}>Banir</DangerButton></TableCell>
+                        <TableCell>
+                          <DangerButton onClick={() => handleBanUser(u._id)}>Banir</DangerButton>
+                        </TableCell>
                       </TableRow>
                     ))
                   )}
@@ -195,7 +258,11 @@ const AdminDashboard = () => {
 
           <Section>
             <SectionTitle>Denúncias</SectionTitle>
-            <SearchInput value={searchReport} onChange={(e) => setSearchReport(e.target.value)} placeholder="Pesquisar por nome, motivo ou status..." />
+            <SearchInput
+              value={searchReport}
+              onChange={(e) => setSearchReport(e.target.value)}
+              placeholder="Pesquisar por nome, motivo ou status..."
+            />
             <TableScroll>
               <Table>
                 <thead>
@@ -211,23 +278,45 @@ const AdminDashboard = () => {
                 </thead>
                 <tbody>
                   {filteredReports.length === 0 ? (
-                    <TableRow><TableCell colSpan={7}>Nenhuma denúncia encontrada</TableCell></TableRow>
+                    <TableRow>
+                      <TableCell colSpan={7}>Nenhuma denúncia encontrada</TableCell>
+                    </TableRow>
                   ) : (
                     filteredReports.map((r) => (
-                      <TableRow key={r._id}>
+                      <TableRow
+                        key={r._id}
+                        onClick={() => openReportModal(r)}
+                        className="clickable-report-row"
+                      >
                         <TableCell className="idCell">{r._id}</TableCell>
                         <TableCell>{r.reporter ? r.reporter.name : "—"}</TableCell>
                         <TableCell>{r.reportedUser ? r.reportedUser.name : "—"}</TableCell>
-                        <TableCell className="adCell">{r.reportedAd ? <a href={`/ad/${r.reportedAd._id}`}>{r.reportedAd.title}</a> : "—"}</TableCell>
+                        <TableCell className="adCell">
+                          {r.reportedAd ? (
+                            <a href={`/ad/${r.reportedAd._id}`}>{r.reportedAd.title}</a>
+                          ) : (
+                            "—"
+                          )}
+                        </TableCell>
                         <TableCell>{r.reason || "—"}</TableCell>
                         <TableCell className="detailsCell">{r.details || "—"}</TableCell>
                         <TableCell>
-                          <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
+                          <div
+                            style={{
+                              display: "flex",
+                              gap: 8,
+                              flexWrap: "wrap",
+                              alignItems: "center",
+                            }}
+                            onClick={(e) => e.stopPropagation()}
+                          >
                             <Pill data-status={(r.status || "pendente").toLowerCase()}>
                               {r.status || "pendente"}
                             </Pill>
                             <NeutralButton onClick={() => handleToggleReportStatus(r._id)}>
-                              {(r.status || "pendente") === "pendente" ? "Marcar resolvido" : "Marcar pendente"}
+                              {(r.status || "pendente") === "pendente"
+                                ? "Marcar resolvido"
+                                : "Marcar pendente"}
                             </NeutralButton>
                           </div>
                         </TableCell>
@@ -239,6 +328,130 @@ const AdminDashboard = () => {
             </TableScroll>
           </Section>
         </DualSectionContainer>
+
+        {isReportModalOpen && selectedReport && (
+          <ModalOverlay onClick={closeReportModal}>
+            <ModalContent onClick={(e) => e.stopPropagation()}>
+              <ModalHeader>
+                <ModalTitle>Detalhes da denúncia</ModalTitle>
+                <CloseButton onClick={closeReportModal}>Fechar</CloseButton>
+              </ModalHeader>
+
+              <ModalTagRow>
+                <Pill data-status={(selectedReport.status || "pendente").toLowerCase()}>
+                  {selectedReport.status || "pendente"}
+                </Pill>
+                {selectedReport.reportedAd && (
+                  <TagChip>Ref. anúncio: {selectedReport.reportedAd._id}</TagChip>
+                )}
+                {selectedReport.createdAt && (
+                  <TagChip>Criada em {formatDateTime(selectedReport.createdAt)}</TagChip>
+                )}
+              </ModalTagRow>
+
+              <ModalDivider />
+
+              <ModalBody>
+                <ModalFieldGroup>
+                  <ModalField>
+                    <ModalFieldLabel>ID da denúncia</ModalFieldLabel>
+                    <ModalFieldValue>{selectedReport._id}</ModalFieldValue>
+                  </ModalField>
+
+                  <ModalField>
+                    <ModalFieldLabel>Denunciante</ModalFieldLabel>
+                    <ModalFieldValue>
+                      {selectedReport.reporter ? selectedReport.reporter.name : "—"}
+                    </ModalFieldValue>
+                  </ModalField>
+
+                  <ModalField>
+                    <ModalFieldLabel>E-mail do denunciante</ModalFieldLabel>
+                    <ModalFieldValue>
+                      {selectedReport.reporter && selectedReport.reporter.email
+                        ? selectedReport.reporter.email
+                        : "—"}
+                    </ModalFieldValue>
+                  </ModalField>
+
+                  <ModalField>
+                    <ModalFieldLabel>Denunciado</ModalFieldLabel>
+                    <ModalFieldValue>
+                      {selectedReport.reportedUser ? selectedReport.reportedUser.name : "—"}
+                    </ModalFieldValue>
+                  </ModalField>
+
+                  <ModalField>
+                    <ModalFieldLabel>E-mail do denunciado</ModalFieldLabel>
+                    <ModalFieldValue>
+                      {selectedReport.reportedUser && selectedReport.reportedUser.email
+                        ? selectedReport.reportedUser.email
+                        : "—"}
+                    </ModalFieldValue>
+                  </ModalField>
+
+                  <ModalField>
+                    <ModalFieldLabel>Data/Hora da denúncia</ModalFieldLabel>
+                    <ModalFieldValue>
+                      {formatDateTime(
+                        selectedReport.createdAt || selectedReport.created_at || null
+                      )}
+                    </ModalFieldValue>
+                  </ModalField>
+                </ModalFieldGroup>
+
+                <ModalFieldGroup>
+                  <ModalField>
+                    <ModalFieldLabel>Anúncio relacionado</ModalFieldLabel>
+                    <ModalFieldValue>
+                      {selectedReport.reportedAd ? (
+                        <a
+                          href={`/ad/${selectedReport.reportedAd._id}`}
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          {selectedReport.reportedAd.title}
+                        </a>
+                      ) : (
+                        "—"
+                      )}
+                    </ModalFieldValue>
+                  </ModalField>
+
+                  <ModalField>
+                    <ModalFieldLabel>Motivo</ModalFieldLabel>
+                    <ModalFieldValue>{selectedReport.reason || "—"}</ModalFieldValue>
+                  </ModalField>
+
+                  <ModalField>
+                    <ModalFieldLabel>Detalhes da denúncia</ModalFieldLabel>
+                    <ModalFieldValue>
+                      {selectedReport.details && selectedReport.details.trim() !== ""
+                        ? selectedReport.details
+                        : "—"}
+                    </ModalFieldValue>
+                  </ModalField>
+
+                  <ModalField>
+                    <ModalFieldLabel>Status</ModalFieldLabel>
+                    <ModalFieldValue>
+                      <ModalTagRow>
+                        <Pill data-status={(selectedReport.status || "pendente").toLowerCase()}>
+                          {selectedReport.status || "pendente"}
+                        </Pill>
+                        <NeutralButton onClick={() => handleToggleReportStatus(selectedReport._id)}>
+                          {(selectedReport.status || "pendente") === "pendente"
+                            ? "Marcar resolvido"
+                            : "Marcar pendente"}
+                        </NeutralButton>
+                      </ModalTagRow>
+                    </ModalFieldValue>
+                  </ModalField>
+                </ModalFieldGroup>
+              </ModalBody>
+            </ModalContent>
+          </ModalOverlay>
+        )}
       </AdminContainer>
     </AdminWrapper>
   );

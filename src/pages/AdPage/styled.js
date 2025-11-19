@@ -35,6 +35,7 @@ export const GalleryArea = styled.div`
   min-width: 0;
 `;
 
+/* QUADRADÃO ocupando toda a largura possível */
 export const MainImageWrapper = styled.div`
   width: 100%;
   max-width: 700px;
@@ -48,13 +49,17 @@ export const MainImageWrapper = styled.div`
   justify-content: center;
   align-items: center;
 
-  aspect-ratio: 4 / 3;
+  margin: 0 auto;
+
+  /* aqui garantimos o formato quadrado */
+  aspect-ratio: 1 / 1;
 `;
 
+/* imagem preenche TODO o quadrado, cortando se precisar */
 export const MainImage = styled.img`
   width: 100%;
   height: 100%;
-  object-fit: contain;
+  object-fit: cover; /* ocupa tudo mantendo proporção */
   image-rendering: -webkit-optimize-contrast;
   image-rendering: crisp-edges;
   border-radius: 16px;
